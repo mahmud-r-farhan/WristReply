@@ -1,8 +1,3 @@
----
-
-# `guide.md`
-
-```markdown
 # Comprehensive Engineering & Architecture Guide: Smart Reply Engine
 
 A production-grade, offline-first smart reply system bridging Android, budget RTOS smartwatches, Zepp OS, and Wear OS without compromising user privacy or violating Google Play Developer Policies.
