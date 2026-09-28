@@ -13,4 +13,6 @@ You are an expert Android (Kotlin) & Flutter engineer. Build the "WristReply AI"
    - If ML Kit returns empty suggestions, use the fallback engine (for Bengali/Benglish and others regional language support).
    - Keep all code modular: write small, reusable components (< 150 lines per file).
 
+note: i want make publish the github repo with the only core engine of this app, not entire app! so becarefully commit everytime, every changes, controll the open source codebase, or check the .gitignore! and git history.
+
 Read the docs and start!
