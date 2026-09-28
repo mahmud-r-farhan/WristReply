@@ -592,7 +592,7 @@ plugins {
 
 android {
     namespace "com.wristreply.app"
-    compileSdk 34
+    compileSdk 37
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -604,7 +604,7 @@ android {
     defaultConfig {
         applicationId "com.wristreply.app"
         minSdk 26          // NotificationChannel + modern RemoteInput rebinding
-        targetSdk 34       // bump to the latest Play requirement each release
+        targetSdk 37       // bump to the latest Play requirement each release
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         ndk { abiFilters "armeabi-v7a", "arm64-v8a", "x86_64" }
