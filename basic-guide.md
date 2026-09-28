@@ -1385,7 +1385,7 @@ jobs:
 ### 16.9 The ten rules if you remember nothing else
 
 1. Reserve a real application ID and never change it.
-2. Target **API 36+**, support **16 KB pages**, and use **Billing Library 8+** if you sell anything.
+2. Target **API 37+**, support **16 KB pages**, and use **Billing Library 8+** if you sell anything.
 3. Start the **closed test early** (12+ real testers, 14 continuous days on new personal accounts).
 4. Keep privacy policy, Data safety form, and actual SDK behaviour **identical**.
 5. Build every screen for six states, 200 % text, dark mode, and large windows.
