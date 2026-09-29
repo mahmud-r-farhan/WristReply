@@ -61,7 +61,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
             if (_shieldEnabled) ...[
               const SizedBox(height: 8),
               const Text(
-                'Custom Trigger Words (English, Bengali & Banglish):',
+                'Custom Trigger Words (Multi-Language Tokens):',
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
               ),
               const SizedBox(height: 10),
@@ -76,7 +76,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
             const SectionHeader(title: 'Smart Clipboard Automation'),
             ToggleSwitchTile(
               title: 'Auto-Copy OTP / Verification Codes',
-              description: 'Detects 4-6 digit authentication codes and copies to clipboard',
+              description: 'Detects 4-8 digit OTP & 2FA security codes across SMS & messaging',
               value: _autoCopyOtp,
               icon: Icons.pin_outlined,
               onChanged: (val) {
@@ -86,7 +86,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
             ),
             ToggleSwitchTile(
               title: 'Auto-Copy Transaction IDs',
-              description: 'Detects TrxID from bKash, Nagad, Bank SMS, UPI & PayPal',
+              description: 'Detects IDs from Apple Pay, Google Pay, PayPal, Stripe, UPI & global Bank SMS',
               value: _autoCopyTrx,
               icon: Icons.receipt_long_rounded,
               onChanged: (val) {

@@ -20,7 +20,7 @@
   - **Tier 2 (Indic & Regional Support)**: Hindi (`hi`), Bengali/Banglish (`bn`).
 - **On-Device ML Kit Inference**: Ephemeral on-demand Google ML Kit Smart Reply client lifecycle (`close()` immediately after generation) to avoid lingering memory footprint.
 - **LPTE Profanity Guard**: Decoupled multi-lingual toxic token filter (`DefaultBlockedWords.kt`) with regex sanitization and customizable user blocklists.
-- **Smart Token & OTP Auto-Copy**: Automatically extracts OTP verification codes and banking transaction IDs (bKash, Nagad, UPI, SMS), injecting an instant 1-tap "Copy [Token]" action on your watch.
+- **Smart Token & OTP Auto-Copy**: Automatically extracts OTP verification codes and banking transaction IDs (Apple Pay, Google Pay, PayPal, Stripe, Pix, iDEAL, UPI, Bank SMS), injecting an instant 1-tap "Copy [Token]" action on your watch.
 - **Silent Injected Actions**: Action injections use `IMPORTANCE_LOW` companion groups, ensuring zero duplicate rings, buzzes, or screen wakeups.
 - **OLED Dark Utility Cockpit**: High-contrast Flutter UI for managing app whitelists, persona quick-replies, sleep gates, and live notification simulation.
 
