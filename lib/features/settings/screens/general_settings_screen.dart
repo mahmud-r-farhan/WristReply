@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_keys.dart';
 import '../../../core/platform/native_channel.dart';
+import '../../../shared/widgets/adaptive_content_container.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../../shared/widgets/toggle_switch_tile.dart';
+import '../widgets/pills_count_tile.dart';
 
 /// Screen for general engine operation, notification mode, and battery persistency.
 class GeneralSettingsScreen extends StatefulWidget {
@@ -47,101 +49,84 @@ class _GeneralSettingsScreenState extends State<GeneralSettingsScreen> {
       backgroundColor: AppColors.surfaceCanvas,
       appBar: AppBar(title: const Text('System & Delivery')),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            const SectionHeader(title: 'Master Engine Control'),
-            ToggleSwitchTile(
-              title: 'Enable WristReply Daemon',
-              description: 'Active background interception of messaging notifications',
-              value: _masterEnabled,
-              icon: Icons.power_settings_new_rounded,
-              onChanged: (val) {
-                setState(() => _masterEnabled = val);
-                NativeChannel.updatePreference(AppKeys.keyMasterEnabled, val);
-              },
-            ),
-            const SectionHeader(title: 'Notification Delivery Mode'),
-            ToggleSwitchTile(
-              title: 'Replace Mode (Opt-in)',
-              description: 'Cancels original notification and reposts with merged pills',
-              value: _replaceMode,
-              icon: Icons.sync_alt_rounded,
-              onChanged: (val) {
-                setState(() => _replaceMode = val);
-                NativeChannel.updatePreference(AppKeys.keyReplaceMode, val);
-              },
-            ),
-            ToggleSwitchTile(
-              title: 'Privacy Mode (Mask Text)',
-              description: 'Hides conversational preview and displays ••••••••••',
-              value: _privacyMode,
-              icon: Icons.visibility_off_outlined,
-              onChanged: (val) {
-                setState(() => _privacyMode = val);
-                NativeChannel.updatePreference(AppKeys.keyPrivacyMode, val);
-              },
-            ),
-            Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceRaised,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.borderSubtle),
+        child: AdaptiveContentContainer(
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              const SectionHeader(title: 'Master Engine Control'),
+              ToggleSwitchTile(
+                title: 'Enable WristReply Daemon',
+                description: 'Active background interception of messaging notifications',
+                value: _masterEnabled,
+                icon: Icons.power_settings_new_rounded,
+                onChanged: (val) {
+                  setState(() => _masterEnabled = val);
+                  NativeChannel.updatePreference(AppKeys.keyMasterEnabled, val);
+                },
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Pills Per Message', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
-                  DropdownButton<int>(
-                    value: _pillsPerMessage,
-                    dropdownColor: AppColors.surfaceRaised,
-                    items: [1, 2, 3].map((n) => DropdownMenuItem(value: n, child: Text('$n pills'))).toList(),
-                    onChanged: (val) {
-                      if (val != null) {
-                        setState(() => _pillsPerMessage = val);
-                        NativeChannel.updatePreference(AppKeys.keyPillsPerMessage, val);
-                      }
-                    },
-                  ),
-                ],
+              const SectionHeader(title: 'Notification Delivery Mode'),
+              ToggleSwitchTile(
+                title: 'Replace Mode (Opt-in)',
+                description: 'Cancels original notification and reposts with merged pills',
+                value: _replaceMode,
+                icon: Icons.sync_alt_rounded,
+                onChanged: (val) {
+                  setState(() => _replaceMode = val);
+                  NativeChannel.updatePreference(AppKeys.keyReplaceMode, val);
+                },
               ),
-            ),
-            const SectionHeader(title: 'Zero-Wake Sleep Guard'),
-            ToggleSwitchTile(
-              title: 'Respect System DND',
-              description: 'Suppress Smart Reply generation when Do Not Disturb is active',
-              value: _respectDnd,
-              icon: Icons.do_not_disturb_on_outlined,
-              onChanged: (val) {
-                setState(() => _respectDnd = val);
-                NativeChannel.updatePreference(AppKeys.keyRespectDnd, val);
-              },
-            ),
-            ToggleSwitchTile(
-              title: 'Scheduled Quiet Hours',
-              description: 'Zero-CPU sleep mode between 23:00 and 06:30',
-              value: _sleepWindow,
-              icon: Icons.bedtime_outlined,
-              onChanged: (val) {
-                setState(() => _sleepWindow = val);
-                NativeChannel.updatePreference(AppKeys.keySleepWindowEnabled, val);
-              },
-            ),
-            const SectionHeader(title: 'OEM Keep-Alive Management'),
-            ElevatedButton.icon(
-              onPressed: () => NativeChannel.openOemAutostart(),
-              icon: const Icon(Icons.settings_suggest_rounded),
-              label: const Text('OPEN OEM AUTOSTART MANAGER'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.surfaceInteractive,
-                foregroundColor: AppColors.accentMint,
-                minimumSize: const Size(double.infinity, 44),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ToggleSwitchTile(
+                title: 'Privacy Mode (Mask Text)',
+                description: 'Hides conversational preview and displays ••••••••••',
+                value: _privacyMode,
+                icon: Icons.visibility_off_outlined,
+                onChanged: (val) {
+                  setState(() => _privacyMode = val);
+                  NativeChannel.updatePreference(AppKeys.keyPrivacyMode, val);
+                },
               ),
-            ),
-          ],
+              PillsCountTile(
+                count: _pillsPerMessage,
+                onChanged: (val) {
+                  setState(() => _pillsPerMessage = val);
+                  NativeChannel.updatePreference(AppKeys.keyPillsPerMessage, val);
+                },
+              ),
+              const SectionHeader(title: 'Zero-Wake Sleep Guard'),
+              ToggleSwitchTile(
+                title: 'Respect System DND',
+                description: 'Suppress Smart Reply generation when Do Not Disturb is active',
+                value: _respectDnd,
+                icon: Icons.do_not_disturb_on_outlined,
+                onChanged: (val) {
+                  setState(() => _respectDnd = val);
+                  NativeChannel.updatePreference(AppKeys.keyRespectDnd, val);
+                },
+              ),
+              ToggleSwitchTile(
+                title: 'Scheduled Quiet Hours',
+                description: 'Zero-CPU sleep mode between 23:00 and 06:30',
+                value: _sleepWindow,
+                icon: Icons.bedtime_outlined,
+                onChanged: (val) {
+                  setState(() => _sleepWindow = val);
+                  NativeChannel.updatePreference(AppKeys.keySleepWindowEnabled, val);
+                },
+              ),
+              const SectionHeader(title: 'OEM Keep-Alive Management'),
+              ElevatedButton.icon(
+                onPressed: () => NativeChannel.openOemAutostart(),
+                icon: const Icon(Icons.settings_suggest_rounded),
+                label: const Text('OPEN OEM AUTOSTART MANAGER'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.surfaceInteractive,
+                  foregroundColor: AppColors.accentMint,
+                  minimumSize: const Size(double.infinity, 44),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

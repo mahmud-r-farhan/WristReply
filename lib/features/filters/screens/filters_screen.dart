@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_keys.dart';
 import '../../../core/platform/native_channel.dart';
+import '../../../shared/widgets/adaptive_content_container.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../../shared/widgets/toggle_switch_tile.dart';
 import '../widgets/custom_word_editor.dart';
@@ -44,7 +45,8 @@ class _FiltersScreenState extends State<FiltersScreen> {
       backgroundColor: AppColors.surfaceCanvas,
       appBar: AppBar(title: const Text('Filters & Automation')),
       body: SafeArea(
-        child: ListView(
+        child: AdaptiveContentContainer(
+          child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
             const SectionHeader(title: 'Inappropriate Language Shield (LPTE)'),
@@ -97,6 +99,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

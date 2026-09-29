@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/platform/native_channel.dart';
+import '../../../shared/widgets/adaptive_content_container.dart';
 
 /// Screen for managing granular per-application whitelist toggles.
 class AppWhitelistScreen extends StatefulWidget {
@@ -17,10 +18,10 @@ class _AppWhitelistScreenState extends State<AppWhitelistScreen> {
   @override
   void initState() {
     super.initState();
-    _loadApps();
+    _loadDiscoveredApps();
   }
 
-  Future<void> _loadApps() async {
+  Future<void> _loadDiscoveredApps() async {
     final apps = await NativeChannel.getDiscoveredApps();
     if (mounted) {
       setState(() {
@@ -44,67 +45,69 @@ class _AppWhitelistScreenState extends State<AppWhitelistScreen> {
       backgroundColor: AppColors.surfaceCanvas,
       appBar: AppBar(title: const Text('Monitored Apps')),
       body: SafeArea(
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator(color: AppColors.accentMint))
-            : _apps.isEmpty
-                ? _buildEmptyState()
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _apps.length,
-                    itemBuilder: (context, index) {
-                      final app = _apps[index];
-                      final name = app['appName'] as String;
-                      final pkg = app['packageName'] as String;
-                      final isEnabled = app['isEnabled'] as bool;
+        child: AdaptiveContentContainer(
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator(color: AppColors.accentMint))
+              : _apps.isEmpty
+                  ? _buildEmptyState()
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: _apps.length,
+                      itemBuilder: (context, index) {
+                        final app = _apps[index];
+                        final name = app['appName'] as String;
+                        final pkg = app['packageName'] as String;
+                        final isEnabled = app['isEnabled'] as bool;
 
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: AppColors.surfaceRaised,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.borderSubtle),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: AppColors.surfaceInteractive,
-                                borderRadius: BorderRadius.circular(8),
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceRaised,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColors.borderSubtle),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: AppColors.surfaceInteractive,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(Icons.chat_bubble_outline_rounded, color: AppColors.accentMint, size: 18),
                               ),
-                              child: const Icon(Icons.chat_bubble_outline_rounded, color: AppColors.accentMint, size: 20),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    name,
-                                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    pkg,
-                                    style: const TextStyle(color: AppColors.textTertiary, fontSize: 11),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      name,
+                                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      pkg,
+                                      style: const TextStyle(color: AppColors.textTertiary, fontSize: 11),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            Switch(
-                              value: isEnabled,
-                              onChanged: (val) => _toggleApp(index, val),
-                              activeThumbColor: AppColors.accentMint,
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                              Switch(
+                                value: isEnabled,
+                                onChanged: (val) => _toggleApp(index, val),
+                                activeThumbColor: AppColors.accentMint,
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+        ),
       ),
     );
   }

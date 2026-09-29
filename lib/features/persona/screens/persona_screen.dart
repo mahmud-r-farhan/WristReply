@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_keys.dart';
 import '../../../core/platform/native_channel.dart';
+import '../../../shared/widgets/adaptive_content_container.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../../shared/widgets/toggle_switch_tile.dart';
 import '../widgets/fallback_pill_editor.dart';
@@ -49,57 +50,59 @@ class _PersonaScreenState extends State<PersonaScreen> {
       backgroundColor: AppColors.surfaceCanvas,
       appBar: AppBar(title: const Text('Reply Personality')),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            const SectionHeader(title: 'Global Conversation Tone'),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _tonePill('Casual (Global)', 'casual', 'Sounds good!', Icons.bolt_rounded),
-                _tonePill('Professional', 'professional', 'Understood', Icons.work_outline_rounded),
-                _tonePill('Spanish', 'spanish', '¡Dale, voy!', Icons.language_rounded),
-                _tonePill('German', 'german', 'Alles klar!', Icons.public_rounded),
-                _tonePill('Portuguese', 'portuguese', 'Beleza!', Icons.chat_rounded),
-                _tonePill('Multi-Lingual Auto', 'multilingual', 'Auto-Detect', Icons.translate_rounded),
-              ],
-            ),
-            const SectionHeader(title: 'Persistent Fallback Pills'),
-            const Text(
-              'Used when on-device AI cannot detect context or for offline regional messages:',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
-            ),
-            const SizedBox(height: 12),
-            FallbackPillEditor(
-              pills: _fallbackPills,
-              onChanged: (updated) {
-                setState(() => _fallbackPills = updated);
-                NativeChannel.updatePreference(AppKeys.keyCustomFallbackPills, updated);
-              },
-            ),
-            const SectionHeader(title: 'Dynamic Smart Injections'),
-            ToggleSwitchTile(
-              title: 'Chrono-Aware Bias',
-              description: 'Late-night (23:00–06:00) & work hours priority ranking across languages',
-              value: _chronoBias,
-              icon: Icons.access_time_rounded,
-              onChanged: (val) {
-                setState(() => _chronoBias = val);
-                NativeChannel.updatePreference(AppKeys.keyChronoBiasEnabled, val);
-              },
-            ),
-            ToggleSwitchTile(
-              title: 'Auto-Append Location Pin',
-              description: 'Append [📍 Location] pill when queried "Where are you?" / "¿Dónde estás?"',
-              value: _locationPin,
-              icon: Icons.location_on_outlined,
-              onChanged: (val) {
-                setState(() => _locationPin = val);
-                NativeChannel.updatePreference(AppKeys.keyLocationPinEnabled, val);
-              },
-            ),
-          ],
+        child: AdaptiveContentContainer(
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              const SectionHeader(title: 'Global Conversation Tone'),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _tonePill('Casual (Global)', 'casual', 'Sounds good!', Icons.bolt_rounded),
+                  _tonePill('Professional', 'professional', 'Understood', Icons.work_outline_rounded),
+                  _tonePill('Spanish', 'spanish', '¡Dale, voy!', Icons.language_rounded),
+                  _tonePill('German', 'german', 'Alles klar!', Icons.public_rounded),
+                  _tonePill('Portuguese', 'portuguese', 'Beleza!', Icons.chat_rounded),
+                  _tonePill('Multi-Lingual Auto', 'multilingual', 'Auto-Detect', Icons.translate_rounded),
+                ],
+              ),
+              const SectionHeader(title: 'Persistent Fallback Pills'),
+              const Text(
+                'Used when on-device AI cannot detect context or for offline regional messages:',
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+              ),
+              const SizedBox(height: 12),
+              FallbackPillEditor(
+                pills: _fallbackPills,
+                onChanged: (updated) {
+                  setState(() => _fallbackPills = updated);
+                  NativeChannel.updatePreference(AppKeys.keyCustomFallbackPills, updated);
+                },
+              ),
+              const SectionHeader(title: 'Dynamic Smart Injections'),
+              ToggleSwitchTile(
+                title: 'Chrono-Aware Bias',
+                description: 'Late-night (23:00–06:00) & work hours priority ranking across languages',
+                value: _chronoBias,
+                icon: Icons.access_time_rounded,
+                onChanged: (val) {
+                  setState(() => _chronoBias = val);
+                  NativeChannel.updatePreference(AppKeys.keyChronoBiasEnabled, val);
+                },
+              ),
+              ToggleSwitchTile(
+                title: 'Auto-Append Location Pin',
+                description: 'Append [📍 Location] pill when queried "Where are you?" / "¿Dónde estás?"',
+                value: _locationPin,
+                icon: Icons.location_on_outlined,
+                onChanged: (val) {
+                  setState(() => _locationPin = val);
+                  NativeChannel.updatePreference(AppKeys.keyLocationPinEnabled, val);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

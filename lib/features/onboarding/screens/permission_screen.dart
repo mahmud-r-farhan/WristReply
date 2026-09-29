@@ -6,6 +6,7 @@ import '../../dashboard/screens/dashboard_screen.dart';
 import '../widgets/permission_card.dart';
 
 /// Screen 1B: Zero-Friction Permissions Handshake with real-time lifecycle refresh.
+/// Optimized for foldables, flips, tablets, and compact cover displays.
 class PermissionScreen extends StatefulWidget {
   const PermissionScreen({super.key});
 
@@ -54,64 +55,79 @@ class _PermissionScreenState extends State<PermissionScreen> with WidgetsBinding
       backgroundColor: AppColors.surfaceCanvas,
       appBar: AppBar(title: const Text('Permissions')),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'CORE ACCESS REQUIRED',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.0,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 640),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight - 32),
+                    child: IntrinsicHeight(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'CORE ACCESS REQUIRED',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          PermissionCard(
+                            title: AppStrings.notificationBridgeTitle,
+                            description: AppStrings.notificationBridgeDesc,
+                            isGranted: _isListenerGranted,
+                            actionLabel: AppStrings.grantAccess,
+                            onAction: () async => await NativeChannel.requestListenerPermission(),
+                          ),
+                          const SizedBox(height: 16),
+                          PermissionCard(
+                            title: AppStrings.backgroundKeepAliveTitle,
+                            description: AppStrings.backgroundKeepAliveDesc,
+                            isGranted: _isBatteryIgnored,
+                            actionLabel: AppStrings.whitelistMe,
+                            onAction: () async => await NativeChannel.requestBatteryExemption(),
+                          ),
+                          const Spacer(),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: ElevatedButton(
+                              onPressed: _isListenerGranted
+                                  ? () {
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(builder: (_) => const DashboardScreen()),
+                                      );
+                                    }
+                                  : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.accentMint,
+                                disabledBackgroundColor: AppColors.surfaceInteractive,
+                                foregroundColor: Colors.black,
+                                disabledForegroundColor: AppColors.textTertiary,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                              child: const Text(
+                                AppStrings.launchConsole,
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
-              PermissionCard(
-                title: AppStrings.notificationBridgeTitle,
-                description: AppStrings.notificationBridgeDesc,
-                isGranted: _isListenerGranted,
-                actionLabel: AppStrings.grantAccess,
-                onAction: () async => await NativeChannel.requestListenerPermission(),
-              ),
-              const SizedBox(height: 16),
-              PermissionCard(
-                title: AppStrings.backgroundKeepAliveTitle,
-                description: AppStrings.backgroundKeepAliveDesc,
-                isGranted: _isBatteryIgnored,
-                actionLabel: AppStrings.whitelistMe,
-                onAction: () async => await NativeChannel.requestBatteryExemption(),
-              ),
-              const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: _isListenerGranted
-                      ? () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (_) => const DashboardScreen()),
-                          );
-                        }
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accentMint,
-                    disabledBackgroundColor: AppColors.surfaceInteractive,
-                    foregroundColor: Colors.black,
-                    disabledForegroundColor: AppColors.textTertiary,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: const Text(
-                    AppStrings.launchConsole,
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 0.5),
-                  ),
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

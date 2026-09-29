@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_keys.dart';
 import '../../../core/platform/native_channel.dart';
+import '../../../shared/widgets/adaptive_content_container.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../../shared/widgets/toggle_switch_tile.dart';
 import '../widgets/delayed_reply_card.dart';
@@ -66,57 +67,59 @@ class _AutomationScreenState extends State<AutomationScreen> {
       backgroundColor: AppColors.surfaceCanvas,
       appBar: AppBar(title: const Text('Automation & Context')),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            const SectionHeader(title: 'Delayed Auto-Reply'),
-            DelayedReplyCard(
-              enabled: _delayedEnabled,
-              delayMinutes: _delayMinutes,
-              controller: _delayedController,
-              onEnabledChanged: (val) {
-                setState(() => _delayedEnabled = val);
-                NativeChannel.updatePreference(AppKeys.keyDelayedReplyEnabled, val);
-              },
-              onMinutesChanged: (val) {
-                setState(() => _delayMinutes = val);
-                NativeChannel.updatePreference(AppKeys.keyDelayedReplyMinutes, val);
-              },
-              onTemplateChanged: (val) {
-                NativeChannel.updatePreference(AppKeys.keyDelayedReplyTemplate, val);
-              },
-            ),
-            const SizedBox(height: 16),
-            const SectionHeader(title: 'Autonomous Driving Mode'),
-            DrivingModeCard(
-              isDrivingEnabled: _drivingEnabled,
-              isAutoReplyEnabled: _drivingAutoReply,
-              templateController: _drivingController,
-              onDrivingChanged: (val) {
-                setState(() => _drivingEnabled = val);
-                NativeChannel.updatePreference(AppKeys.keyDrivingModeEnabled, val);
-              },
-              onAutoReplyChanged: (val) {
-                setState(() => _drivingAutoReply = val);
-                NativeChannel.updatePreference(AppKeys.keyDrivingAutoReplyEnabled, val);
-              },
-              onTemplateChanged: (val) {
-                NativeChannel.updatePreference(AppKeys.keyDrivingTemplate, val);
-              },
-            ),
-            const SizedBox(height: 16),
-            const SectionHeader(title: 'Calendar & Meeting Integration'),
-            ToggleSwitchTile(
-              title: 'Detect Busy Calendar Events',
-              description: 'Injects [📅 In a meeting until X:XX] quick-reply pill during scheduled meetings',
-              value: _calendarEnabled,
-              icon: Icons.event_busy_rounded,
-              onChanged: (val) {
-                setState(() => _calendarEnabled = val);
-                NativeChannel.updatePreference(AppKeys.keyCalendarModeEnabled, val);
-              },
-            ),
-          ],
+        child: AdaptiveContentContainer(
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              const SectionHeader(title: 'Delayed Auto-Reply'),
+              DelayedReplyCard(
+                enabled: _delayedEnabled,
+                delayMinutes: _delayMinutes,
+                controller: _delayedController,
+                onEnabledChanged: (val) {
+                  setState(() => _delayedEnabled = val);
+                  NativeChannel.updatePreference(AppKeys.keyDelayedReplyEnabled, val);
+                },
+                onMinutesChanged: (val) {
+                  setState(() => _delayMinutes = val);
+                  NativeChannel.updatePreference(AppKeys.keyDelayedReplyMinutes, val);
+                },
+                onTemplateChanged: (val) {
+                  NativeChannel.updatePreference(AppKeys.keyDelayedReplyTemplate, val);
+                },
+              ),
+              const SizedBox(height: 16),
+              const SectionHeader(title: 'Autonomous Driving Mode'),
+              DrivingModeCard(
+                isDrivingEnabled: _drivingEnabled,
+                isAutoReplyEnabled: _drivingAutoReply,
+                templateController: _drivingController,
+                onDrivingChanged: (val) {
+                  setState(() => _drivingEnabled = val);
+                  NativeChannel.updatePreference(AppKeys.keyDrivingModeEnabled, val);
+                },
+                onAutoReplyChanged: (val) {
+                  setState(() => _drivingAutoReply = val);
+                  NativeChannel.updatePreference(AppKeys.keyDrivingAutoReplyEnabled, val);
+                },
+                onTemplateChanged: (val) {
+                  NativeChannel.updatePreference(AppKeys.keyDrivingTemplate, val);
+                },
+              ),
+              const SizedBox(height: 16),
+              const SectionHeader(title: 'Calendar & Meeting Integration'),
+              ToggleSwitchTile(
+                title: 'Detect Busy Calendar Events',
+                description: 'Injects [📅 In a meeting until X:XX] quick-reply pill during scheduled meetings',
+                value: _calendarEnabled,
+                icon: Icons.event_busy_rounded,
+                onChanged: (val) {
+                  setState(() => _calendarEnabled = val);
+                  NativeChannel.updatePreference(AppKeys.keyCalendarModeEnabled, val);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
