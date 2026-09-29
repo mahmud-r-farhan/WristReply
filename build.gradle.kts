@@ -1,5 +1,6 @@
 plugins {
     id("com.android.library")
+    `maven-publish`
 }
 
 android {
@@ -15,6 +16,26 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
+    }
+}
+
+publishing {
+    publications {
+        register<MavenPublication>("release") {
+            groupId = "com.github.mahmud-r-farhan"
+            artifactId = "wristreply-core"
+            version = "1.0.0"
+
+            afterEvaluate {
+                from(components["release"])
+            }
+        }
     }
 }
 
