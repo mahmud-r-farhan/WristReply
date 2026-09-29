@@ -38,6 +38,6 @@ object SmartReplyResolver {
             resolved
         }
 
-        return ContextualReplyEnhancer.enhanceSuggestions(context, baseReplies, prefsCache)
+        return ContextualReplyEnhancer.enhanceSuggestions(context, baseReplies, prefsCache, contextText)
     }
 }

@@ -38,9 +38,9 @@ class HardwareStatusCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           _statusRow(
-            Icons.watch_rounded,
-            'Wearable Node',
-            'Mirrored (RTOS / Wear OS)',
+            Icons.devices_rounded,
+            'Active Surfaces',
+            'Phone Shade & Smartwatches',
             true,
           ),
           const SizedBox(height: 8),

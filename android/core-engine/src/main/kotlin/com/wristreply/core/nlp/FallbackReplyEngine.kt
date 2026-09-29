@@ -34,6 +34,12 @@ object FallbackReplyEngine {
             val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
             if (hour >= 23 || hour <= 6) {
                 if (SPANISH_PATTERN.containsMatchIn(incomingText)) return LanguageReplyBanks.SPANISH_LATE_NIGHT
+                if (GERMAN_PATTERN.containsMatchIn(incomingText)) return LanguageReplyBanks.GERMAN_LATE_NIGHT
+                if (PORTUGUESE_PATTERN.containsMatchIn(incomingText)) return LanguageReplyBanks.PORTUGUESE_LATE_NIGHT
+                if (FRENCH_PATTERN.containsMatchIn(incomingText)) return LanguageReplyBanks.FRENCH_LATE_NIGHT
+                if (ARABIC_REGEX.containsMatchIn(incomingText)) return LanguageReplyBanks.ARABIC_LATE_NIGHT
+                if (DEVANAGARI_REGEX.containsMatchIn(incomingText) || HINGLISH_PATTERN.containsMatchIn(incomingText)) return LanguageReplyBanks.HINDI_LATE_NIGHT
+                if (BENGALI_REGEX.containsMatchIn(incomingText) || BANGLISH_PATTERN.containsMatchIn(incomingText)) return LanguageReplyBanks.BENGALI_LATE_NIGHT
                 return LanguageReplyBanks.ENGLISH_LATE_NIGHT
             }
         }

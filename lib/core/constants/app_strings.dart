@@ -16,7 +16,7 @@ class AppStrings {
 
   static const String backgroundKeepAliveTitle = 'Background Keep-Alive';
   static const String backgroundKeepAliveDesc =
-      'Exempts the engine from OEM battery killers to ensure reliable wrist syncing.';
+      'Exempts the engine from OEM battery killers to ensure instant phone replies and reliable wrist syncing.';
 
   static const String grantAccess = 'GRANT ACCESS';
   static const String whitelistMe = 'WHITELIST ME';

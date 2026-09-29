@@ -12,6 +12,7 @@ import androidx.core.app.NotificationManagerCompat
 import com.wristreply.core.guard.ReadActionResolver
 import com.wristreply.core.inspector.NotificationGate
 import com.wristreply.core.model.DynamicReplyTarget
+import com.wristreply.core.nlp.LocationPillResolver
 import com.wristreply.core.receiver.ActionBroadcastReceiver
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -74,8 +75,10 @@ object NotificationPublisher {
 
         // Add Smart Reply action pills
         val pills = suggestions.take(3).toMutableList()
-        if (appendLocationPin && target.messageText.lowercase().contains(Regex("where|kothay|koi"))) {
-            pills.add("[📍 Location]")
+        if (appendLocationPin) {
+            LocationPillResolver.resolveLocationPill(target.messageText)?.let { locPill ->
+                pills.add(locPill)
+            }
         }
 
         pills.forEachIndexed { index, pillText ->
