@@ -22,4 +22,8 @@ class AppKeys {
 
   static const String keyRespectDnd = 'wr_respect_dnd';
   static const String keySleepWindowEnabled = 'wr_sleep_window_enabled';
+
+  static const String keyDelayedReplyEnabled = 'wr_delayed_reply_enabled';
+  static const String keyDelayedReplyMinutes = 'wr_delayed_reply_minutes';
+  static const String keyDelayedReplyTemplate = 'wr_delayed_reply_template';
 }

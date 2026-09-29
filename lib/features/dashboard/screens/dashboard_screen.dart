@@ -5,6 +5,7 @@ import '../../../core/platform/native_channel.dart';
 import '../../../shared/widgets/metrics_card.dart';
 import '../../../shared/widgets/state_badge.dart';
 import '../../apps/screens/app_whitelist_screen.dart';
+import '../../automation/screens/automation_screen.dart';
 import '../../filters/screens/filters_screen.dart';
 import '../../persona/screens/persona_screen.dart';
 import '../../settings/screens/general_settings_screen.dart';
@@ -94,6 +95,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               _navTile(context, Icons.apps_rounded, 'Discovered Messaging Apps', 'Manage whitelist per app', const AppWhitelistScreen()),
               _navTile(context, Icons.psychology_rounded, 'Persona & Reply Tailoring', 'Tone, fallback pills, chrono bias', const PersonaScreen()),
               _navTile(context, Icons.security_rounded, 'LPTE Shield & Clipboard', 'Profanity filter & OTP / TrxID copy', const FiltersScreen()),
+              _navTile(context, Icons.auto_mode_rounded, 'Automation & Delayed Replies', 'Auto-response rules & timers', const AutomationScreen()),
               _navTile(context, Icons.tune_rounded, 'General & System Settings', 'Delivery mode, sleep window, autostart', const GeneralSettingsScreen()),
             ],
           ),

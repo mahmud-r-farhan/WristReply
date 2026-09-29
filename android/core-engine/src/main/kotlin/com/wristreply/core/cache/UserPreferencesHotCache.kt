@@ -50,9 +50,12 @@ class UserPreferencesHotCache(context: Context) {
         booleanFlags[PrefKeys.KEY_AUTO_COPY_OTP] = runtimePrefs.getBoolean(PrefKeys.KEY_AUTO_COPY_OTP, true)
         booleanFlags[PrefKeys.KEY_CHRONO_BIAS_ENABLED] = runtimePrefs.getBoolean(PrefKeys.KEY_CHRONO_BIAS_ENABLED, true)
         booleanFlags[PrefKeys.KEY_LOCATION_PIN_ENABLED] = runtimePrefs.getBoolean(PrefKeys.KEY_LOCATION_PIN_ENABLED, false)
+        booleanFlags[PrefKeys.KEY_DELAYED_REPLY_ENABLED] = runtimePrefs.getBoolean(PrefKeys.KEY_DELAYED_REPLY_ENABLED, false)
 
         stringValues[PrefKeys.KEY_CONVERSATION_TONE] = runtimePrefs.getString(PrefKeys.KEY_CONVERSATION_TONE, "casual") ?: "casual"
+        stringValues[PrefKeys.KEY_DELAYED_REPLY_TEMPLATE] = runtimePrefs.getString(PrefKeys.KEY_DELAYED_REPLY_TEMPLATE, "Busy right now, will reply shortly.") ?: "Busy right now, will reply shortly."
         intValues[PrefKeys.KEY_PILLS_PER_MESSAGE] = runtimePrefs.getInt(PrefKeys.KEY_PILLS_PER_MESSAGE, 3)
+        intValues[PrefKeys.KEY_DELAYED_REPLY_MINUTES] = runtimePrefs.getInt(PrefKeys.KEY_DELAYED_REPLY_MINUTES, 5)
     }
 
     private fun refreshRuntimeKey(key: String) {
@@ -67,10 +70,10 @@ class UserPreferencesHotCache(context: Context) {
                 customFallbackPills.clear()
                 customFallbackPills.addAll(updated)
             }
-            PrefKeys.KEY_CONVERSATION_TONE -> {
-                stringValues[key] = runtimePrefs.getString(key, "casual") ?: "casual"
+            PrefKeys.KEY_CONVERSATION_TONE, PrefKeys.KEY_DELAYED_REPLY_TEMPLATE -> {
+                stringValues[key] = runtimePrefs.getString(key, "") ?: ""
             }
-            PrefKeys.KEY_PILLS_PER_MESSAGE -> {
+            PrefKeys.KEY_PILLS_PER_MESSAGE, PrefKeys.KEY_DELAYED_REPLY_MINUTES -> {
                 intValues[key] = runtimePrefs.getInt(key, 3)
             }
             else -> {
@@ -98,6 +101,10 @@ class UserPreferencesHotCache(context: Context) {
     fun isAutoCopyOtp(): Boolean = booleanFlags[PrefKeys.KEY_AUTO_COPY_OTP] ?: true
     fun isChronoBiasEnabled(): Boolean = booleanFlags[PrefKeys.KEY_CHRONO_BIAS_ENABLED] ?: true
     fun isLocationPinEnabled(): Boolean = booleanFlags[PrefKeys.KEY_LOCATION_PIN_ENABLED] ?: false
+    fun isDelayedReplyEnabled(): Boolean = booleanFlags[PrefKeys.KEY_DELAYED_REPLY_ENABLED] ?: false
+    fun getDelayedReplyMinutes(): Int = intValues[PrefKeys.KEY_DELAYED_REPLY_MINUTES] ?: 5
+    fun getDelayedReplyTemplate(): String = stringValues[PrefKeys.KEY_DELAYED_REPLY_TEMPLATE] ?: "Busy right now, will reply shortly."
+
     fun getConversationTone(): String = stringValues[PrefKeys.KEY_CONVERSATION_TONE] ?: "casual"
     fun getPillsPerMessage(): Int = intValues[PrefKeys.KEY_PILLS_PER_MESSAGE] ?: 3
     fun getCustomFallbackPills(): List<String> = customFallbackPills.toList()

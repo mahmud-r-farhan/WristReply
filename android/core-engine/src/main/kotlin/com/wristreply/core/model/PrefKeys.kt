@@ -33,4 +33,8 @@ object PrefKeys {
     const val KEY_SLEEP_START_MINUTE = "wr_sleep_start_minute"
     const val KEY_SLEEP_END_HOUR = "wr_sleep_end_hour"
     const val KEY_SLEEP_END_MINUTE = "wr_sleep_end_minute"
+
+    const val KEY_DELAYED_REPLY_ENABLED = "wr_delayed_reply_enabled"
+    const val KEY_DELAYED_REPLY_MINUTES = "wr_delayed_reply_minutes"
+    const val KEY_DELAYED_REPLY_TEMPLATE = "wr_delayed_reply_template"
 }
