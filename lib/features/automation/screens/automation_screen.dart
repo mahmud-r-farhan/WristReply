@@ -4,8 +4,10 @@ import '../../../core/constants/app_keys.dart';
 import '../../../core/platform/native_channel.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../../shared/widgets/toggle_switch_tile.dart';
+import '../widgets/delayed_reply_card.dart';
+import '../widgets/driving_mode_card.dart';
 
-/// Screen for managing optional delayed auto-replies and message automation.
+/// Screen for managing automated triggers, driving detection, and meeting replies.
 class AutomationScreen extends StatefulWidget {
   const AutomationScreen({super.key});
 
@@ -14,10 +16,17 @@ class AutomationScreen extends StatefulWidget {
 }
 
 class _AutomationScreenState extends State<AutomationScreen> {
-  bool _delayedReplyEnabled = false;
+  bool _delayedEnabled = false;
   int _delayMinutes = 5;
-  final TextEditingController _templateController =
+  final TextEditingController _delayedController =
       TextEditingController(text: 'Busy right now, will reply shortly.');
+
+  bool _drivingEnabled = false;
+  bool _drivingAutoReply = false;
+  final TextEditingController _drivingController =
+      TextEditingController(text: 'Driving right now, will reply once parked.');
+
+  bool _calendarEnabled = false;
 
   @override
   void initState() {
@@ -27,7 +36,8 @@ class _AutomationScreenState extends State<AutomationScreen> {
 
   @override
   void dispose() {
-    _templateController.dispose();
+    _delayedController.dispose();
+    _drivingController.dispose();
     super.dispose();
   }
 
@@ -35,107 +45,77 @@ class _AutomationScreenState extends State<AutomationScreen> {
     final prefs = await NativeChannel.getPreferences();
     if (mounted) {
       setState(() {
-        _delayedReplyEnabled = prefs[AppKeys.keyDelayedReplyEnabled] as bool? ?? false;
+        _delayedEnabled = prefs[AppKeys.keyDelayedReplyEnabled] as bool? ?? false;
         _delayMinutes = prefs[AppKeys.keyDelayedReplyMinutes] as int? ?? 5;
-        final template = prefs[AppKeys.keyDelayedReplyTemplate] as String?;
-        if (template != null && template.isNotEmpty) {
-          _templateController.text = template;
-        }
+        final delayedTpl = prefs[AppKeys.keyDelayedReplyTemplate] as String?;
+        if (delayedTpl != null && delayedTpl.isNotEmpty) _delayedController.text = delayedTpl;
+
+        _drivingEnabled = prefs[AppKeys.keyDrivingModeEnabled] as bool? ?? false;
+        _drivingAutoReply = prefs[AppKeys.keyDrivingAutoReplyEnabled] as bool? ?? false;
+        final drivingTpl = prefs[AppKeys.keyDrivingTemplate] as String?;
+        if (drivingTpl != null && drivingTpl.isNotEmpty) _drivingController.text = drivingTpl;
+
+        _calendarEnabled = prefs[AppKeys.keyCalendarModeEnabled] as bool? ?? false;
       });
     }
-  }
-
-  void _saveTemplate(String text) {
-    NativeChannel.updatePreference(AppKeys.keyDelayedReplyTemplate, text);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surfaceCanvas,
-      appBar: AppBar(title: const Text('Automation Rules')),
+      appBar: AppBar(title: const Text('Automation & Context')),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
             const SectionHeader(title: 'Delayed Auto-Reply'),
-            ToggleSwitchTile(
-              title: 'Enable Delayed Auto-Reply',
-              description: 'Fires an automated reply if you do not interact with the notification',
-              value: _delayedReplyEnabled,
-              icon: Icons.timer_outlined,
-              onChanged: (val) {
-                setState(() => _delayedReplyEnabled = val);
+            DelayedReplyCard(
+              enabled: _delayedEnabled,
+              delayMinutes: _delayMinutes,
+              controller: _delayedController,
+              onEnabledChanged: (val) {
+                setState(() => _delayedEnabled = val);
                 NativeChannel.updatePreference(AppKeys.keyDelayedReplyEnabled, val);
               },
+              onMinutesChanged: (val) {
+                setState(() => _delayMinutes = val);
+                NativeChannel.updatePreference(AppKeys.keyDelayedReplyMinutes, val);
+              },
+              onTemplateChanged: (val) {
+                NativeChannel.updatePreference(AppKeys.keyDelayedReplyTemplate, val);
+              },
             ),
-            if (_delayedReplyEnabled) ...[
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceRaised,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.borderSubtle),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Delay Duration', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
-                        Text('$_delayMinutes min', style: const TextStyle(color: AppColors.accentMint, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                    Slider(
-                      value: _delayMinutes.toDouble(),
-                      min: 1,
-                      max: 30,
-                      divisions: 29,
-                      activeColor: AppColors.accentMint,
-                      onChanged: (val) {
-                        setState(() => _delayMinutes = val.toInt());
-                        NativeChannel.updatePreference(AppKeys.keyDelayedReplyMinutes, val.toInt());
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                    const Text('Response Template', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-                    const SizedBox(height: 6),
-                    TextField(
-                      controller: _templateController,
-                      style: const TextStyle(color: AppColors.textPrimary),
-                      onChanged: _saveTemplate,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: AppColors.surfaceCanvas,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceInteractive,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.info_outline, color: AppColors.accentPrimary, size: 20),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Dismissing the notification on your phone or smartwatch immediately cancels the pending auto-reply.',
-                        style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            const SizedBox(height: 16),
+            const SectionHeader(title: 'Autonomous Driving Mode'),
+            DrivingModeCard(
+              isDrivingEnabled: _drivingEnabled,
+              isAutoReplyEnabled: _drivingAutoReply,
+              templateController: _drivingController,
+              onDrivingChanged: (val) {
+                setState(() => _drivingEnabled = val);
+                NativeChannel.updatePreference(AppKeys.keyDrivingModeEnabled, val);
+              },
+              onAutoReplyChanged: (val) {
+                setState(() => _drivingAutoReply = val);
+                NativeChannel.updatePreference(AppKeys.keyDrivingAutoReplyEnabled, val);
+              },
+              onTemplateChanged: (val) {
+                NativeChannel.updatePreference(AppKeys.keyDrivingTemplate, val);
+              },
+            ),
+            const SizedBox(height: 16),
+            const SectionHeader(title: 'Calendar & Meeting Integration'),
+            ToggleSwitchTile(
+              title: 'Detect Busy Calendar Events',
+              description: 'Injects [📅 In a meeting until X:XX] quick-reply pill during scheduled meetings',
+              value: _calendarEnabled,
+              icon: Icons.event_busy_rounded,
+              onChanged: (val) {
+                setState(() => _calendarEnabled = val);
+                NativeChannel.updatePreference(AppKeys.keyCalendarModeEnabled, val);
+              },
+            ),
           ],
         ),
       ),

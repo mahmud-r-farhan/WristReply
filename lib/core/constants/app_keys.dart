@@ -26,4 +26,9 @@ class AppKeys {
   static const String keyDelayedReplyEnabled = 'wr_delayed_reply_enabled';
   static const String keyDelayedReplyMinutes = 'wr_delayed_reply_minutes';
   static const String keyDelayedReplyTemplate = 'wr_delayed_reply_template';
+
+  static const String keyDrivingModeEnabled = 'wr_driving_mode_enabled';
+  static const String keyDrivingAutoReplyEnabled = 'wr_driving_auto_reply_enabled';
+  static const String keyDrivingTemplate = 'wr_driving_template';
+  static const String keyCalendarModeEnabled = 'wr_calendar_mode_enabled';
 }

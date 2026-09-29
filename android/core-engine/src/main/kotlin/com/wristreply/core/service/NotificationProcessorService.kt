@@ -96,7 +96,7 @@ class NotificationProcessorService : NotificationListenerService() {
         contextText: String,
         readAction: android.app.Notification.Action?
     ) {
-        val suggestions = SmartReplyResolver.resolve(contextText, target.senderName, prefsCache)
+        val suggestions = SmartReplyResolver.resolve(applicationContext, contextText, target.senderName, prefsCache)
         if (suggestions.isEmpty()) return
 
         // 6. Replace Mode vs Silent Companion Mode

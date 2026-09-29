@@ -51,9 +51,13 @@ class UserPreferencesHotCache(context: Context) {
         booleanFlags[PrefKeys.KEY_CHRONO_BIAS_ENABLED] = runtimePrefs.getBoolean(PrefKeys.KEY_CHRONO_BIAS_ENABLED, true)
         booleanFlags[PrefKeys.KEY_LOCATION_PIN_ENABLED] = runtimePrefs.getBoolean(PrefKeys.KEY_LOCATION_PIN_ENABLED, false)
         booleanFlags[PrefKeys.KEY_DELAYED_REPLY_ENABLED] = runtimePrefs.getBoolean(PrefKeys.KEY_DELAYED_REPLY_ENABLED, false)
+        booleanFlags[PrefKeys.KEY_DRIVING_MODE_ENABLED] = runtimePrefs.getBoolean(PrefKeys.KEY_DRIVING_MODE_ENABLED, false)
+        booleanFlags[PrefKeys.KEY_DRIVING_AUTO_REPLY_ENABLED] = runtimePrefs.getBoolean(PrefKeys.KEY_DRIVING_AUTO_REPLY_ENABLED, false)
+        booleanFlags[PrefKeys.KEY_CALENDAR_MODE_ENABLED] = runtimePrefs.getBoolean(PrefKeys.KEY_CALENDAR_MODE_ENABLED, false)
 
         stringValues[PrefKeys.KEY_CONVERSATION_TONE] = runtimePrefs.getString(PrefKeys.KEY_CONVERSATION_TONE, "casual") ?: "casual"
         stringValues[PrefKeys.KEY_DELAYED_REPLY_TEMPLATE] = runtimePrefs.getString(PrefKeys.KEY_DELAYED_REPLY_TEMPLATE, "Busy right now, will reply shortly.") ?: "Busy right now, will reply shortly."
+        stringValues[PrefKeys.KEY_DRIVING_TEMPLATE] = runtimePrefs.getString(PrefKeys.KEY_DRIVING_TEMPLATE, "Driving right now, will reply once parked.") ?: "Driving right now, will reply once parked."
         intValues[PrefKeys.KEY_PILLS_PER_MESSAGE] = runtimePrefs.getInt(PrefKeys.KEY_PILLS_PER_MESSAGE, 3)
         intValues[PrefKeys.KEY_DELAYED_REPLY_MINUTES] = runtimePrefs.getInt(PrefKeys.KEY_DELAYED_REPLY_MINUTES, 5)
     }
@@ -70,7 +74,7 @@ class UserPreferencesHotCache(context: Context) {
                 customFallbackPills.clear()
                 customFallbackPills.addAll(updated)
             }
-            PrefKeys.KEY_CONVERSATION_TONE, PrefKeys.KEY_DELAYED_REPLY_TEMPLATE -> {
+            PrefKeys.KEY_CONVERSATION_TONE, PrefKeys.KEY_DELAYED_REPLY_TEMPLATE, PrefKeys.KEY_DRIVING_TEMPLATE -> {
                 stringValues[key] = runtimePrefs.getString(key, "") ?: ""
             }
             PrefKeys.KEY_PILLS_PER_MESSAGE, PrefKeys.KEY_DELAYED_REPLY_MINUTES -> {
@@ -102,6 +106,10 @@ class UserPreferencesHotCache(context: Context) {
     fun isChronoBiasEnabled(): Boolean = booleanFlags[PrefKeys.KEY_CHRONO_BIAS_ENABLED] ?: true
     fun isLocationPinEnabled(): Boolean = booleanFlags[PrefKeys.KEY_LOCATION_PIN_ENABLED] ?: false
     fun isDelayedReplyEnabled(): Boolean = booleanFlags[PrefKeys.KEY_DELAYED_REPLY_ENABLED] ?: false
+    fun isDrivingModeEnabled(): Boolean = booleanFlags[PrefKeys.KEY_DRIVING_MODE_ENABLED] ?: false
+    fun isDrivingAutoReplyEnabled(): Boolean = booleanFlags[PrefKeys.KEY_DRIVING_AUTO_REPLY_ENABLED] ?: false
+    fun getDrivingTemplate(): String = stringValues[PrefKeys.KEY_DRIVING_TEMPLATE] ?: "Driving right now, will reply once parked."
+    fun isCalendarModeEnabled(): Boolean = booleanFlags[PrefKeys.KEY_CALENDAR_MODE_ENABLED] ?: false
     fun getDelayedReplyMinutes(): Int = intValues[PrefKeys.KEY_DELAYED_REPLY_MINUTES] ?: 5
     fun getDelayedReplyTemplate(): String = stringValues[PrefKeys.KEY_DELAYED_REPLY_TEMPLATE] ?: "Busy right now, will reply shortly."
 

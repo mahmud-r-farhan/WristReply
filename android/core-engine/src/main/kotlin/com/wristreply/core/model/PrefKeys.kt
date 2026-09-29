@@ -37,4 +37,9 @@ object PrefKeys {
     const val KEY_DELAYED_REPLY_ENABLED = "wr_delayed_reply_enabled"
     const val KEY_DELAYED_REPLY_MINUTES = "wr_delayed_reply_minutes"
     const val KEY_DELAYED_REPLY_TEMPLATE = "wr_delayed_reply_template"
+
+    const val KEY_DRIVING_MODE_ENABLED = "wr_driving_mode_enabled"
+    const val KEY_DRIVING_AUTO_REPLY_ENABLED = "wr_driving_auto_reply_enabled"
+    const val KEY_DRIVING_TEMPLATE = "wr_driving_template"
+    const val KEY_CALENDAR_MODE_ENABLED = "wr_calendar_mode_enabled"
 }
