@@ -19,24 +19,30 @@ object LanguageReplyBanks {
     // German (DACH)
     val GERMAN_CASUAL = listOf("Alles klar!", "Bin unterwegs!", "Kann gerade nicht, melde mich später.")
     val GERMAN_PRO = listOf("Verstanden, ich prüfe das.", "Ich gebe Ihnen gleich Bescheid.", "Vielen Dank.")
+    val GERMAN_LATE_NIGHT = listOf("Schlafe schon, melde mich morgen", "Kann das bis morgen warten?", "Gute Nacht")
 
     // Portuguese (Brazil & Portugal)
     val PORTUGUESE_CASUAL = listOf("Beleza, combinado!", "Estou a caminho!", "Não posso falar agora, te ligo já.")
     val PORTUGUESE_PRO = listOf("Entendido, já estou verificando.", "Retorno em breve.", "Muito obrigado.")
+    val PORTUGUESE_LATE_NIGHT = listOf("Dormindo já, falo amanhã", "Pode esperar até amanhã?", "Boa noite")
 
     // French (France & Canada)
     val FRENCH_CASUAL = listOf("Ça marche !", "Je suis en route !", "Occupé pour le moment, je te rappelle.")
     val FRENCH_PRO = listOf("C'est bien noté, je m'en occupe.", "Je reviens vers vous rapidement.", "Merci bien.")
+    val FRENCH_LATE_NIGHT = listOf("Je dors déjà, on se parle demain", "Ça peut attendre demain matin ?", "Bonne nuit")
 
     // Arabic (Gulf & MENA)
     val ARABIC_CASUAL = listOf("تمام، إن شاء الله!", "أنا في الطريق!", "مشغول الآن، بكلمك بعدين.")
     val ARABIC_PRO = listOf("تم الاستلام، سأوافيك بالتفاصيل قريباً.", "شكراً جزيلاً.", "سأتواصل معك في أقرب وقت.")
+    val ARABIC_LATE_NIGHT = listOf("نائم الآن، نتحدث غداً", "ممكن تنتظر للصباح؟", "تصبح على خير")
 
     // Indic (Hindi & Hinglish)
     val HINDI_CASUAL = listOf("Theek hai, badhiya!", "Raste me hu!", "Abhi thoda busy hu, baad me call karta hu.")
     val HINDI_DEVANAGARI = listOf("हाँ, बिल्कुल!", "रास्ते में हूँ!", "थोड़ी देर में बात करता हूँ।")
+    val HINDI_LATE_NIGHT = listOf("So raha hu, subah baat karte hai", "Kal subah baat karein?", "Shubh ratri")
 
     // Bengali & Banglish
     val BENGALI_SCRIPT = listOf("হ্যাঁ, ঠিক আছে!", "আমি রাস্তায় আছি!", "একটু পর কথা বলছি।")
     val BANGLISH_CASUAL = listOf("Astechi 5 min e", "Ekhon ektu busy achi", "Call dao ektu por")
+    val BENGALI_LATE_NIGHT = listOf("Ghumacche, shokale kotha boli", "Shokale bolte parbo?", "Shubh ratri")
 }

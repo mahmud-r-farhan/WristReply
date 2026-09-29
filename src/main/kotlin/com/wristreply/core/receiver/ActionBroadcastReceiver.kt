@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import androidx.core.app.NotificationManagerCompat
+import com.wristreply.core.context.LocationProviderHelper
 import com.wristreply.core.metrics.MetricsLedger
 
 /**
@@ -34,9 +35,10 @@ class ActionBroadcastReceiver : BroadcastReceiver() {
         } ?: return
 
         val notificationId = intent.getIntExtra(EXTRA_NOTIFICATION_ID, -1)
+        val resolvedText = LocationProviderHelper.resolveDispatchText(context, replyText)
 
         val replyBundle = Bundle().apply {
-            putCharSequence(resultKey, replyText)
+            putCharSequence(resultKey, resolvedText)
         }
 
         val fillInIntent = Intent()
