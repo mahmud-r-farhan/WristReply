@@ -98,17 +98,20 @@ class DashboardExpandedView extends StatelessWidget {
   Widget _navTile(BuildContext context, IconData icon, String title, String subtitle, Widget targetScreen) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
+      child: Material(
         color: AppColors.surfaceRaised,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
-      child: ListTile(
-        leading: Icon(icon, color: AppColors.accentPrimary),
-        title: Text(title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
-        subtitle: Text(subtitle, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.textTertiary),
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => targetScreen)),
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: AppColors.borderSubtle),
+        ),
+        child: ListTile(
+          leading: Icon(icon, color: AppColors.accentPrimary),
+          title: Text(title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
+          subtitle: Text(subtitle, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+          trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.textTertiary),
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => targetScreen)),
+        ),
       ),
     );
   }

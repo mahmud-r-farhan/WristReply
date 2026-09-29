@@ -3,6 +3,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/platform/native_channel.dart';
 import '../../dashboard/screens/dashboard_screen.dart';
+import '../widgets/ai_permission_explanation_card.dart';
 import '../widgets/permission_card.dart';
 
 /// Screen 1B: Zero-Friction Permissions Handshake with real-time lifecycle refresh.
@@ -17,6 +18,7 @@ class PermissionScreen extends StatefulWidget {
 class _PermissionScreenState extends State<PermissionScreen> with WidgetsBindingObserver {
   bool _isListenerGranted = false;
   bool _isBatteryIgnored = false;
+  bool _isNotificationGranted = false;
 
   @override
   void initState() {
@@ -41,10 +43,12 @@ class _PermissionScreenState extends State<PermissionScreen> with WidgetsBinding
   Future<void> _checkPermissions() async {
     final listener = await NativeChannel.isListenerRunning();
     final battery = await NativeChannel.isBatteryOptimizationIgnored();
+    final notification = await NativeChannel.isNotificationPermissionGranted();
     if (mounted) {
       setState(() {
         _isListenerGranted = listener;
         _isBatteryIgnored = battery;
+        _isNotificationGranted = notification;
       });
     }
   }
@@ -93,8 +97,18 @@ class _PermissionScreenState extends State<PermissionScreen> with WidgetsBinding
                             actionLabel: AppStrings.whitelistMe,
                             onAction: () async => await NativeChannel.requestBatteryExemption(),
                           ),
-                          const Spacer(),
                           const SizedBox(height: 16),
+                          PermissionCard(
+                            title: AppStrings.notificationPostingTitle,
+                            description: AppStrings.notificationPostingDesc,
+                            isGranted: _isNotificationGranted,
+                            isOptional: true,
+                            actionLabel: AppStrings.grantOptional,
+                            onAction: () async => await NativeChannel.requestNotificationPermission(),
+                          ),
+                          const Spacer(),
+                          const AiPermissionExplanationCard(),
+                          const SizedBox(height: 12),
                           SizedBox(
                             width: double.infinity,
                             height: 50,

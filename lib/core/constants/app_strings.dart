@@ -18,8 +18,13 @@ class AppStrings {
   static const String backgroundKeepAliveDesc =
       'Exempts the engine from OEM battery killers to ensure instant phone replies and reliable wrist syncing.';
 
+  static const String notificationPostingTitle = 'System Notifications (Optional)';
+  static const String notificationPostingDesc =
+      'Optional. Allows WristReply to show real-time background status alerts, delayed reply progress, and sync indicators.';
+
   static const String grantAccess = 'GRANT ACCESS';
   static const String whitelistMe = 'WHITELIST ME';
+  static const String grantOptional = 'ENABLE OPTIONAL';
   static const String launchConsole = 'LAUNCH CONSOLE';
 
   static const String liveConsole = 'WRISTREPLY CONSOLE';

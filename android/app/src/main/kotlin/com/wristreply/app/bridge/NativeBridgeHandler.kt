@@ -40,6 +40,18 @@ class NativeBridgeHandler(private val context: Context, private val scope: Corou
             "isBatteryOptimizationIgnored" -> {
                 result.success(OemKeepAliveManager.isIgnoringBatteryOptimizations(context))
             }
+            "isNotificationPermissionGranted" -> {
+                val enabled = NotificationManagerCompat.from(context).areNotificationsEnabled()
+                result.success(enabled)
+            }
+            "requestNotificationPermission" -> {
+                val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                    putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                context.startActivity(intent)
+                result.success(true)
+            }
             "requestBatteryExemption" -> {
                 OemKeepAliveManager.requestIgnoreBatteryOptimizations(context)
                 result.success(true)

@@ -32,6 +32,24 @@ class NativeChannel {
     }
   }
 
+  static Future<bool> isNotificationPermissionGranted() async {
+    try {
+      final res = await _channel.invokeMethod<bool>('isNotificationPermissionGranted');
+      return res ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static Future<bool> requestNotificationPermission() async {
+    try {
+      final res = await _channel.invokeMethod<bool>('requestNotificationPermission');
+      return res ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
   static Future<void> requestBatteryExemption() async {
     try {
       await _channel.invokeMethod('requestBatteryExemption');
