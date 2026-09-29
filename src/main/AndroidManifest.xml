@@ -35,5 +35,9 @@
         <receiver
             android:name="com.wristreply.core.receiver.ActionBroadcastReceiver"
             android:exported="false" />
+
+        <receiver
+            android:name="com.wristreply.core.automation.ScheduledReplyReceiver"
+            android:exported="false" />
     </application>
 </manifest>

@@ -4,7 +4,7 @@ import android.content.ComponentName
 import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
-import com.wristreply.core.cache.SmartReplyLruCache
+import com.wristreply.core.automation.DelayedReplyScheduler
 import com.wristreply.core.cache.UserPreferencesHotCache
 import com.wristreply.core.filters.ProfanityGuardEngine
 import com.wristreply.core.filters.SmartTokenExtractor
@@ -13,9 +13,7 @@ import com.wristreply.core.guard.ReadActionResolver
 import com.wristreply.core.guard.SleepWindowGate
 import com.wristreply.core.inspector.DynamicNotificationInspector
 import com.wristreply.core.inspector.NotificationGate
-import com.wristreply.core.metrics.MetricsLedger
-import com.wristreply.core.nlp.EphemeralMLKitEngine
-import com.wristreply.core.nlp.FallbackReplyEngine
+import com.wristreply.core.nlp.SmartReplyResolver
 import com.wristreply.core.publisher.NotificationAlertHelper
 import com.wristreply.core.publisher.NotificationPublisher
 import com.wristreply.core.wear.WearSyncService
@@ -72,7 +70,19 @@ class NotificationProcessorService : NotificationListenerService() {
         val replyTarget = DynamicNotificationInspector.resolveReplyTarget(activeSbn) ?: return
         val readAction = ReadActionResolver.extractMarkAsReadAction(activeSbn.notification)
 
-        // 4. Debounced burst ingestion
+        // 4. Automated Delayed Reply Scheduling (if enabled)
+        if (prefsCache.isDelayedReplyEnabled()) {
+            DelayedReplyScheduler.scheduleReply(
+                context = applicationContext,
+                senderId = replyTarget.senderName,
+                replyText = prefsCache.getDelayedReplyTemplate(),
+                originalPendingIntent = replyTarget.pendingIntent,
+                resultKey = replyTarget.resultKey,
+                delayMinutes = prefsCache.getDelayedReplyMinutes()
+            )
+        }
+
+        // 5. Debounced burst ingestion
         MessageDebounceBuffer.enqueueMessage(serviceScope, replyTarget.senderName, replyTarget.messageText) { combinedContext ->
             serviceScope.launch {
                 processAndPublish(activeSbn, replyTarget, combinedContext, readAction)
@@ -86,29 +96,10 @@ class NotificationProcessorService : NotificationListenerService() {
         contextText: String,
         readAction: android.app.Notification.Action?
     ) {
-        val startTime = System.currentTimeMillis()
-        val cached = SmartReplyLruCache.get(contextText)
-        val suggestions = if (cached != null) {
-            MetricsLedger.recordInference(System.currentTimeMillis() - startTime, isCacheHit = true)
-            cached
-        } else {
-            val fresh = EphemeralMLKitEngine.suggestReplies(contextText, target.senderName)
-            val resolved = if (fresh.isNotEmpty()) fresh else {
-                FallbackReplyEngine.resolveFallback(
-                    incomingText = contextText,
-                    userCustomPills = prefsCache.getCustomFallbackPills(),
-                    tone = prefsCache.getConversationTone(),
-                    applyChronoBias = prefsCache.isChronoBiasEnabled()
-                )
-            }
-            SmartReplyLruCache.put(contextText, resolved)
-            MetricsLedger.recordInference(System.currentTimeMillis() - startTime, isCacheHit = false)
-            resolved
-        }
-
+        val suggestions = SmartReplyResolver.resolve(contextText, target.senderName, prefsCache)
         if (suggestions.isEmpty()) return
 
-        // 5. Replace Mode vs Silent Companion Mode
+        // 6. Replace Mode vs Silent Companion Mode
         if (prefsCache.isReplaceMode()) {
             try { cancelNotification(sbn.key) } catch (_: Exception) {}
         }
@@ -131,7 +122,10 @@ class NotificationProcessorService : NotificationListenerService() {
         sbn?.let {
             NotificationPublisher.cancelCompanion(applicationContext, it.id)
             val sender = it.notification?.extras?.getCharSequence(android.app.Notification.EXTRA_TITLE)?.toString()
-            if (sender != null) MessageDebounceBuffer.clearBuffer(sender)
+            if (sender != null) {
+                MessageDebounceBuffer.clearBuffer(sender)
+                DelayedReplyScheduler.cancelScheduledReply(applicationContext, sender)
+            }
         }
     }
 
