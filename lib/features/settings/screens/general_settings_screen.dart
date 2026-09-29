@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_keys.dart';
-import '../../../core/constants/app_strings.dart';
 import '../../../core/platform/native_channel.dart';
 import '../../../shared/widgets/adaptive_content_container.dart';
-import '../../../shared/widgets/section_header.dart';
-import '../../../shared/widgets/toggle_switch_tile.dart';
-import '../widgets/pills_count_tile.dart';
+import '../widgets/delivery_mode_section.dart';
+import '../widgets/master_control_section.dart';
+import '../widgets/oem_management_section.dart';
+import '../widgets/settings_branding_footer.dart';
+import '../widgets/sleep_guard_section.dart';
 
 /// Screen for general engine operation, notification mode, and battery persistency.
 class GeneralSettingsScreen extends StatefulWidget {
@@ -112,100 +113,47 @@ class _GeneralSettingsScreenState extends State<GeneralSettingsScreen> with Widg
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              const SectionHeader(title: 'Master Engine Control'),
-              ToggleSwitchTile(
-                title: 'Enable WristReply Daemon',
-                description: 'Active background interception of messaging notifications',
-                value: _masterEnabled,
-                icon: Icons.power_settings_new_rounded,
-                onChanged: (val) {
+              MasterControlSection(
+                masterEnabled: _masterEnabled,
+                onMasterChanged: (val) {
                   setState(() => _masterEnabled = val);
                   NativeChannel.updatePreference(AppKeys.keyMasterEnabled, val);
                 },
+                notificationsEnabled: _notificationsEnabled,
+                hasNotificationPermission: _hasNotificationPermission,
+                onNotificationsChanged: _onNotificationToggleChanged,
               ),
-              ToggleSwitchTile(
-                title: AppStrings.appNotificationSendTitle,
-                description: _hasNotificationPermission
-                    ? AppStrings.appNotificationSendDesc
-                    : '${AppStrings.appNotificationSendDesc} (Permission required)',
-                value: _notificationsEnabled,
-                icon: Icons.notifications_active_outlined,
-                onChanged: _onNotificationToggleChanged,
-              ),
-              const SectionHeader(title: 'Notification Delivery Mode'),
-              ToggleSwitchTile(
-                title: 'Replace Mode (Opt-in)',
-                description: 'Cancels original notification and reposts with merged pills',
-                value: _replaceMode,
-                icon: Icons.sync_alt_rounded,
-                onChanged: (val) {
+              DeliveryModeSection(
+                replaceMode: _replaceMode,
+                onReplaceModeChanged: (val) {
                   setState(() => _replaceMode = val);
                   NativeChannel.updatePreference(AppKeys.keyReplaceMode, val);
                 },
-              ),
-              ToggleSwitchTile(
-                title: 'Privacy Mode (Mask Text)',
-                description: 'Hides conversational preview and displays ••••••••••',
-                value: _privacyMode,
-                icon: Icons.visibility_off_outlined,
-                onChanged: (val) {
+                privacyMode: _privacyMode,
+                onPrivacyModeChanged: (val) {
                   setState(() => _privacyMode = val);
                   NativeChannel.updatePreference(AppKeys.keyPrivacyMode, val);
                 },
-              ),
-              PillsCountTile(
-                count: _pillsPerMessage,
-                onChanged: (val) {
+                pillsPerMessage: _pillsPerMessage,
+                onPillsCountChanged: (val) {
                   setState(() => _pillsPerMessage = val);
                   NativeChannel.updatePreference(AppKeys.keyPillsPerMessage, val);
                 },
               ),
-              const SectionHeader(title: 'Zero-Wake Sleep Guard'),
-              ToggleSwitchTile(
-                title: 'Respect System DND',
-                description: 'Suppress Smart Reply generation when Do Not Disturb is active',
-                value: _respectDnd,
-                icon: Icons.do_not_disturb_on_outlined,
-                onChanged: (val) {
+              SleepGuardSection(
+                respectDnd: _respectDnd,
+                onRespectDndChanged: (val) {
                   setState(() => _respectDnd = val);
                   NativeChannel.updatePreference(AppKeys.keyRespectDnd, val);
                 },
-              ),
-              ToggleSwitchTile(
-                title: 'Scheduled Quiet Hours',
-                description: 'Zero-CPU sleep mode between 23:00 and 06:30',
-                value: _sleepWindow,
-                icon: Icons.bedtime_outlined,
-                onChanged: (val) {
+                sleepWindow: _sleepWindow,
+                onSleepWindowChanged: (val) {
                   setState(() => _sleepWindow = val);
                   NativeChannel.updatePreference(AppKeys.keySleepWindowEnabled, val);
                 },
               ),
-              const SectionHeader(title: 'OEM Keep-Alive Management'),
-              ElevatedButton.icon(
-                onPressed: () => NativeChannel.openOemAutostart(),
-                icon: const Icon(Icons.settings_suggest_rounded),
-                label: const Text('OPEN OEM AUTOSTART MANAGER'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.surfaceInteractive,
-                  foregroundColor: AppColors.accentMint,
-                  minimumSize: const Size(double.infinity, 44),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-              ),
-              const SizedBox(height: 28),
-              Center(
-                child: Text(
-                  'WristReply AI by Bengal Bytes',
-                  style: TextStyle(
-                    color: AppColors.textTertiary.withValues(alpha: 0.7),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
+              const OemManagementSection(),
+              const SettingsBrandingFooter(),
             ],
           ),
         ),
