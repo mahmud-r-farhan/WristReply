@@ -16,6 +16,7 @@ class PreferenceRepository(private val context: Context) {
     fun getAllPreferences(): Map<String, Any> {
         val map = mutableMapOf<String, Any>()
         map[PrefKeys.KEY_MASTER_ENABLED] = runtimePrefs.getBoolean(PrefKeys.KEY_MASTER_ENABLED, true)
+        map[PrefKeys.KEY_NOTIFICATIONS_ENABLED] = runtimePrefs.getBoolean(PrefKeys.KEY_NOTIFICATIONS_ENABLED, true)
         map[PrefKeys.KEY_PILLS_PER_MESSAGE] = runtimePrefs.getInt(PrefKeys.KEY_PILLS_PER_MESSAGE, 3)
         map[PrefKeys.KEY_REPLACE_MODE] = runtimePrefs.getBoolean(PrefKeys.KEY_REPLACE_MODE, false)
         map[PrefKeys.KEY_PRIVACY_MODE] = runtimePrefs.getBoolean(PrefKeys.KEY_PRIVACY_MODE, false)

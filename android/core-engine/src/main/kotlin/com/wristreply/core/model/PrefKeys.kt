@@ -11,6 +11,7 @@ object PrefKeys {
     const val PREFS_SLEEP = "wrist_reply_sleep_prefs"
 
     const val KEY_MASTER_ENABLED = "wr_master_enabled"
+    const val KEY_NOTIFICATIONS_ENABLED = "wr_notifications_enabled"
     const val KEY_PILLS_PER_MESSAGE = "wr_pills_per_message"
     const val KEY_REPLACE_MODE = "wr_replace_mode"
     const val KEY_PRIVACY_MODE = "wr_privacy_mode"

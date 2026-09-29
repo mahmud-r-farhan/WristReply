@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_keys.dart';
+import '../../../core/constants/app_strings.dart';
 import '../../../core/platform/native_channel.dart';
 import '../../../shared/widgets/adaptive_content_container.dart';
 import '../../../shared/widgets/section_header.dart';
@@ -15,8 +16,10 @@ class GeneralSettingsScreen extends StatefulWidget {
   State<GeneralSettingsScreen> createState() => _GeneralSettingsScreenState();
 }
 
-class _GeneralSettingsScreenState extends State<GeneralSettingsScreen> {
+class _GeneralSettingsScreenState extends State<GeneralSettingsScreen> with WidgetsBindingObserver {
   bool _masterEnabled = true;
+  bool _notificationsEnabled = true;
+  bool _hasNotificationPermission = false;
   bool _replaceMode = false;
   bool _privacyMode = false;
   int _pillsPerMessage = 3;
@@ -26,11 +29,27 @@ class _GeneralSettingsScreenState extends State<GeneralSettingsScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadSettings();
   }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _loadSettings();
+    }
+  }
+
   Future<void> _loadSettings() async {
+    final hasPermission = await NativeChannel.isNotificationPermissionGranted();
     final prefs = await NativeChannel.getPreferences();
+
     if (mounted) {
       setState(() {
         _masterEnabled = prefs[AppKeys.keyMasterEnabled] as bool? ?? true;
@@ -39,7 +58,47 @@ class _GeneralSettingsScreenState extends State<GeneralSettingsScreen> {
         _pillsPerMessage = prefs[AppKeys.keyPillsPerMessage] as int? ?? 3;
         _respectDnd = prefs[AppKeys.keyRespectDnd] as bool? ?? true;
         _sleepWindow = prefs[AppKeys.keySleepWindowEnabled] as bool? ?? false;
+
+        _hasNotificationPermission = hasPermission;
+        final savedNotifSetting = prefs[AppKeys.keyNotificationsEnabled] as bool? ?? true;
+
+        if (!hasPermission) {
+          _notificationsEnabled = false;
+          NativeChannel.updatePreference(AppKeys.keyNotificationsEnabled, false);
+        } else {
+          _notificationsEnabled = savedNotifSetting;
+        }
       });
+    }
+  }
+
+  Future<void> _onNotificationToggleChanged(bool val) async {
+    if (val) {
+      if (!_hasNotificationPermission) {
+        await NativeChannel.requestNotificationPermission();
+        final granted = await NativeChannel.isNotificationPermissionGranted();
+        if (mounted) {
+          if (granted) {
+            setState(() {
+              _hasNotificationPermission = true;
+              _notificationsEnabled = true;
+            });
+            await NativeChannel.updatePreference(AppKeys.keyNotificationsEnabled, true);
+          } else {
+            setState(() {
+              _hasNotificationPermission = false;
+              _notificationsEnabled = false;
+            });
+            await NativeChannel.updatePreference(AppKeys.keyNotificationsEnabled, false);
+          }
+        }
+      } else {
+        setState(() => _notificationsEnabled = true);
+        await NativeChannel.updatePreference(AppKeys.keyNotificationsEnabled, true);
+      }
+    } else {
+      setState(() => _notificationsEnabled = false);
+      await NativeChannel.updatePreference(AppKeys.keyNotificationsEnabled, false);
     }
   }
 
@@ -63,6 +122,15 @@ class _GeneralSettingsScreenState extends State<GeneralSettingsScreen> {
                   setState(() => _masterEnabled = val);
                   NativeChannel.updatePreference(AppKeys.keyMasterEnabled, val);
                 },
+              ),
+              ToggleSwitchTile(
+                title: AppStrings.appNotificationSendTitle,
+                description: _hasNotificationPermission
+                    ? AppStrings.appNotificationSendDesc
+                    : '${AppStrings.appNotificationSendDesc} (Permission required)',
+                value: _notificationsEnabled,
+                icon: Icons.notifications_active_outlined,
+                onChanged: _onNotificationToggleChanged,
               ),
               const SectionHeader(title: 'Notification Delivery Mode'),
               ToggleSwitchTile(
@@ -125,6 +193,19 @@ class _GeneralSettingsScreenState extends State<GeneralSettingsScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
               ),
+              const SizedBox(height: 28),
+              Center(
+                child: Text(
+                  'WristReply AI by Bengal Bytes',
+                  style: TextStyle(
+                    color: AppColors.textTertiary.withValues(alpha: 0.7),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
             ],
           ),
         ),

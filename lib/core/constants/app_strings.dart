@@ -22,6 +22,10 @@ class AppStrings {
   static const String notificationPostingDesc =
       'Optional. Allows WristReply to show real-time background status alerts, delayed reply progress, and sync indicators.';
 
+  static const String appNotificationSendTitle = 'App Notification Sending';
+  static const String appNotificationSendDesc =
+      'Post companion reply pills, status alerts, and clipboard confirmations to notification panel.';
+
   static const String grantAccess = 'GRANT ACCESS';
   static const String whitelistMe = 'WHITELIST ME';
   static const String grantOptional = 'ENABLE OPTIONAL';

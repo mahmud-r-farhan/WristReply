@@ -43,6 +43,7 @@ class UserPreferencesHotCache(context: Context) {
         customFallbackPills.addAll(savedPills)
 
         booleanFlags[PrefKeys.KEY_MASTER_ENABLED] = runtimePrefs.getBoolean(PrefKeys.KEY_MASTER_ENABLED, true)
+        booleanFlags[PrefKeys.KEY_NOTIFICATIONS_ENABLED] = runtimePrefs.getBoolean(PrefKeys.KEY_NOTIFICATIONS_ENABLED, true)
         booleanFlags[PrefKeys.KEY_REPLACE_MODE] = runtimePrefs.getBoolean(PrefKeys.KEY_REPLACE_MODE, false)
         booleanFlags[PrefKeys.KEY_PRIVACY_MODE] = runtimePrefs.getBoolean(PrefKeys.KEY_PRIVACY_MODE, false)
         booleanFlags[PrefKeys.KEY_PROFANITY_SHIELD] = runtimePrefs.getBoolean(PrefKeys.KEY_PROFANITY_SHIELD, true)
@@ -98,6 +99,7 @@ class UserPreferencesHotCache(context: Context) {
     }
 
     fun isMasterEnabled(): Boolean = booleanFlags[PrefKeys.KEY_MASTER_ENABLED] ?: true
+    fun isNotificationsEnabled(): Boolean = booleanFlags[PrefKeys.KEY_NOTIFICATIONS_ENABLED] ?: true
     fun isReplaceMode(): Boolean = booleanFlags[PrefKeys.KEY_REPLACE_MODE] ?: false
     fun isPrivacyMode(): Boolean = booleanFlags[PrefKeys.KEY_PRIVACY_MODE] ?: false
     fun isProfanityShieldEnabled(): Boolean = booleanFlags[PrefKeys.KEY_PROFANITY_SHIELD] ?: true

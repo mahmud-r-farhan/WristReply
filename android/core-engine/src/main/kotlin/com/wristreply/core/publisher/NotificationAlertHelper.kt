@@ -35,6 +35,9 @@ object NotificationAlertHelper {
     }
 
     fun postAbuseWarning(context: Context, sender: String, detectedWord: String) {
+        val prefsCache = com.wristreply.core.cache.UserPreferencesHotCache(context)
+        if (!prefsCache.isNotificationsEnabled()) return
+
         ensureAlertChannel(context)
         val builder = NotificationCompat.Builder(context, ALERT_CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_alert)
@@ -49,6 +52,9 @@ object NotificationAlertHelper {
     }
 
     fun postCopyConfirmation(context: Context, type: TokenType, tokenValue: String) {
+        val prefsCache = com.wristreply.core.cache.UserPreferencesHotCache(context)
+        if (!prefsCache.isNotificationsEnabled()) return
+
         ensureAlertChannel(context)
         val title = if (type == TokenType.TRANSACTION_ID) "Transaction ID Copied" else "OTP Copied"
         val builder = NotificationCompat.Builder(context, ALERT_CHANNEL_ID)

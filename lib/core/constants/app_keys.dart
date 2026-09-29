@@ -5,6 +5,7 @@ class AppKeys {
   static const String methodChannel = 'com.wristreply.app/engine';
 
   static const String keyMasterEnabled = 'wr_master_enabled';
+  static const String keyNotificationsEnabled = 'wr_notifications_enabled';
   static const String keyPillsPerMessage = 'wr_pills_per_message';
   static const String keyReplaceMode = 'wr_replace_mode';
   static const String keyPrivacyMode = 'wr_privacy_mode';

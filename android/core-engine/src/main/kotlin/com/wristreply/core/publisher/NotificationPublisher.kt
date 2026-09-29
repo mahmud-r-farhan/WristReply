@@ -53,6 +53,9 @@ object NotificationPublisher {
         isPrivacyMode: Boolean = false,
         appendLocationPin: Boolean = false
     ) {
+        val prefsCache = com.wristreply.core.cache.UserPreferencesHotCache(context)
+        if (!prefsCache.isNotificationsEnabled()) return
+
         ensureChannel(context)
         val displayText = if (isPrivacyMode) "••••••••••" else target.messageText
 
