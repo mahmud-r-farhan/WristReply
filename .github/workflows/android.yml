@@ -42,7 +42,7 @@ jobs:
           cache: true
 
       - name: Cache Gradle
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.gradle/caches
@@ -52,7 +52,17 @@ jobs:
             gradle-${{ runner.os }}-app-
 
       - name: Install dependencies
+        id: pubget
+        continue-on-error: true
         run: flutter pub get
+
+      - name: Surface pub get failure
+        if: steps.pubget.outcome == 'failure'
+        run: |
+          set +e
+          flutter pub get > /tmp/pubget.log 2>&1
+          echo "::error title=pub-get::$(tail -n 30 /tmp/pubget.log | tr '\n' ' ' | cut -c1-1800)"
+          exit 1
 
       - name: Build debug APK
         run: flutter build apk --debug
@@ -64,7 +74,7 @@ jobs:
         run: flutter build appbundle
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wristreply-android-build
           path: |
@@ -96,7 +106,7 @@ jobs:
           cache: true
 
       - name: Cache Gradle
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.gradle/caches
@@ -113,15 +123,26 @@ jobs:
           cat local.properties
 
       - name: Run :core-engine unit tests
+        id: kotlintests
+        continue-on-error: true
         working-directory: android
         run: ./gradlew :core-engine:testDebugUnitTest --stacktrace
+
+      - name: Surface Gradle failure
+        if: steps.kotlintests.outcome == 'failure'
+        working-directory: android
+        run: |
+          set +e
+          ./gradlew :core-engine:testDebugUnitTest --stacktrace > /tmp/gradle.log 2>&1
+          echo "::error title=gradle::$(grep -E 'error:|FAILURE|What went wrong|Caused by|> Task|Execution failed|e: ' /tmp/gradle.log | tail -n 25 | tr '\n' ' ' | cut -c1-1800)"
+          exit 1
 
       - name: Build core-engine AAR
         working-directory: android
         run: ./gradlew :core-engine:assembleRelease --stacktrace
 
       - name: Upload AAR
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wristreply-core-engine-aar
           path: build/core-engine/outputs/aar/
@@ -129,7 +150,7 @@ jobs:
 
       - name: Upload JUnit report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: core-engine-junit-report
           path: build/core-engine/reports/tests/

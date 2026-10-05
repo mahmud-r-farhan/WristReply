@@ -74,7 +74,7 @@ jobs:
           cache: true
 
       - name: Cache Gradle
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.gradle/caches
@@ -92,7 +92,7 @@ jobs:
         run: ./gradlew :core-engine:assembleRelease --stacktrace
 
       - name: Upload AAR
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wristreply-core-aar-${{ needs.resolve-tag.outputs.version }}
           path: build/core-engine/outputs/aar/
@@ -128,13 +128,13 @@ jobs:
         run: flutter build apk --release
 
       - name: Upload app bundle
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wristreply-android-bundle-${{ needs.resolve-tag.outputs.version }}
           path: build/app/outputs/bundle/release/*.aab
 
       - name: Upload APKs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wristreply-android-apk-${{ needs.resolve-tag.outputs.version }}
           path: build/app/outputs/flutter-apk/*.apk
@@ -145,19 +145,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download AAR
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: wristreply-core-aar-${{ needs.resolve-tag.outputs.version }}
           path: artifacts/aar/
 
       - name: Download app bundle
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: wristreply-android-bundle-${{ needs.resolve-tag.outputs.version }}
           path: artifacts/aab/
 
       - name: Download APKs
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: wristreply-android-apk-${{ needs.resolve-tag.outputs.version }}
           path: artifacts/apk/

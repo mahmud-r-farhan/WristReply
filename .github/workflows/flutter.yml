@@ -46,9 +46,20 @@ jobs:
           flutter --version
           dart --version
           java -version
+          echo "::notice title=toolchain::$(flutter --version 2>&1 | tr '\n' ' ' | cut -c1-400)"
 
       - name: Install dependencies
+        id: pubget
+        continue-on-error: true
         run: flutter pub get
+
+      - name: Surface pub get failure
+        if: steps.pubget.outcome == 'failure'
+        run: |
+          set +e
+          flutter pub get > /tmp/pubget.log 2>&1
+          echo "::error title=pub-get::$(tail -n 30 /tmp/pubget.log | tr '\n' ' ' | cut -c1-1800)"
+          exit 1
 
       - name: Verify pubspec.lock is in sync with pubspec.yaml
         run: git diff --exit-code pubspec.lock
@@ -84,7 +95,7 @@ jobs:
 
       - name: Upload coverage
         if: github.event_name == 'push'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: flutter-coverage
           path: coverage/lcov.info
@@ -101,7 +112,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
 
