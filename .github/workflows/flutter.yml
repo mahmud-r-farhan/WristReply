@@ -71,7 +71,7 @@ jobs:
           # The runner logs are not downloadable from every environment, so emit
           # the regenerated lockfile as base64 annotations that can be read back
           # through the check-runs API and committed verbatim.
-          base64 -w 1200 pubspec.lock | awk '{ print "::error title=lock-b64-" NR "::" $0 }'
+          base64 -w 2400 pubspec.lock | awk '{ print "::error title=lock-b64-" NR "::" $0 }'
           exit 1
 
       - name: Analyze
