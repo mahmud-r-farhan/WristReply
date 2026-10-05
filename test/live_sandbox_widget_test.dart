@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wrist_reply/core/constants/app_keys.dart';
-import 'package:wrist_reply/core/platform/native_channel.dart';
 import 'package:wrist_reply/features/dashboard/widgets/live_sandbox_widget.dart';
 
 /// Tests the [LiveSandboxWidget] interactive surface used by both the dashboard
@@ -52,9 +51,11 @@ void main() {
   });
 
   testWidgets('seed text can be customised', (WidgetTester tester) async {
-    await tester.pumpWidget(const MaterialApp(
-      home: Scaffold(body: LiveSandboxWidget(seedText: 'Custom seed message')),
-    ));
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(body: LiveSandboxWidget(seedText: 'Custom seed message')),
+      ),
+    );
 
     expect(find.text('Custom seed message'), findsOneWidget);
   });
