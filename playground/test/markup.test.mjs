@@ -117,6 +117,15 @@ describe('explanatory content', () => {
     }
   });
 
+  it('documents that the page must be served over HTTP', () => {
+    // The controller is an ES module that imports ./engine.js, so a file://
+    // document cannot run it. The README used to claim the opposite.
+    assert.match(html, /<script type="module" src="assets\/app\.js">/);
+    const readme = readFileSync(join(root, 'README.md'), 'utf8');
+    assert.match(readme, /Double-clicking `index\.html` will not work/);
+    assert.ok(!/file:\/\/` protocol also works/.test(readme), 'stale file:// claim is back');
+  });
+
   it('answers what it is, how it works and why, in prose', () => {
     for (const heading of ['What is this, actually?', 'The eight-stage pipeline', 'The zero-cloud contract']) {
       assert.ok(html.includes(heading), `missing section heading: ${heading}`);

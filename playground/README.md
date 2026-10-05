@@ -28,9 +28,13 @@ python3 -m http.server 8080
 # → http://localhost:8080
 ```
 
-Any static host works (GitHub Pages, Netlify, `npx serve`, `nginx`). Opening `index.html` with the
-`file://` protocol also works in Chrome and Firefox, because the engine is loaded as an ES module
-from the same directory.
+Any static host works (GitHub Pages, Netlify, `npx serve`, `nginx`).
+
+**Double-clicking `index.html` will not work.** The controller is loaded as
+`<script type="module">` and imports `./engine.js`; module scripts are always fetched under CORS, and a
+`file://` document has an opaque origin, so the browser blocks both the script and its import. The page
+still renders — HTML, CSS and the CDN styles are unaffected — but the sandbox stays inert. Serve it over
+HTTP.
 
 ---
 
