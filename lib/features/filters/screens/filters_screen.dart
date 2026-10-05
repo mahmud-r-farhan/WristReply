@@ -17,7 +17,7 @@ class FiltersScreen extends StatefulWidget {
 
 class _FiltersScreenState extends State<FiltersScreen> {
   bool _shieldEnabled = true;
-  List<String> _blockedWords = [];
+  List<String> _blockedWords = const [];
   bool _autoCopyOtp = true;
   bool _autoCopyTrx = true;
 
@@ -29,14 +29,13 @@ class _FiltersScreenState extends State<FiltersScreen> {
 
   Future<void> _loadFilters() async {
     final prefs = await NativeChannel.getPreferences();
-    if (mounted) {
-      setState(() {
-        _shieldEnabled = prefs[AppKeys.keyProfanityShield] as bool? ?? true;
-        _blockedWords = (prefs[AppKeys.keyCustomBlockedWords] as List?)?.cast<String>() ?? [];
-        _autoCopyOtp = prefs[AppKeys.keyAutoCopyOtp] as bool? ?? true;
-        _autoCopyTrx = prefs[AppKeys.keyAutoCopyTrx] as bool? ?? true;
-      });
-    }
+    if (!mounted) return;
+    setState(() {
+      _shieldEnabled = prefs[AppKeys.keyProfanityShield] as bool? ?? true;
+      _blockedWords = (prefs[AppKeys.keyCustomBlockedWords] as List?)?.cast<String>() ?? const [];
+      _autoCopyOtp = prefs[AppKeys.keyAutoCopyOtp] as bool? ?? true;
+      _autoCopyTrx = prefs[AppKeys.keyAutoCopyTrx] as bool? ?? true;
+    });
   }
 
   @override
@@ -47,59 +46,59 @@ class _FiltersScreenState extends State<FiltersScreen> {
       body: SafeArea(
         child: AdaptiveContentContainer(
           child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            const SectionHeader(title: 'Inappropriate Language Shield (LPTE)'),
-            ToggleSwitchTile(
-              title: 'Abusive Content Interceptor',
-              description: 'Suppresses cheerful pills and warns on toxic/abusive messages',
-              value: _shieldEnabled,
-              icon: Icons.shield_rounded,
-              onChanged: (val) {
-                setState(() => _shieldEnabled = val);
-                NativeChannel.updatePreference(AppKeys.keyProfanityShield, val);
-              },
-            ),
-            if (_shieldEnabled) ...[
-              const SizedBox(height: 8),
-              const Text(
-                'Custom Trigger Words (Multi-Language Tokens):',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+            padding: const EdgeInsets.all(16),
+            children: [
+              const SectionHeader(title: 'Inappropriate Language Shield (LPTE)'),
+              ToggleSwitchTile(
+                title: 'Abusive Content Interceptor',
+                description: 'Suppresses cheerful pills and warns on toxic/abusive messages',
+                value: _shieldEnabled,
+                icon: Icons.shield_rounded,
+                onChanged: (val) {
+                  setState(() => _shieldEnabled = val);
+                  NativeChannel.updatePreference(AppKeys.keyProfanityShield, val);
+                },
               ),
-              const SizedBox(height: 10),
-              CustomWordEditor(
-                words: _blockedWords,
-                onChanged: (updated) {
-                  setState(() => _blockedWords = updated);
-                  NativeChannel.updatePreference(AppKeys.keyCustomBlockedWords, updated);
+              if (_shieldEnabled) ...[
+                const SizedBox(height: 8),
+                const Text(
+                  'Custom Trigger Words (Multi-Language Tokens):',
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                ),
+                const SizedBox(height: 10),
+                CustomWordEditor(
+                  words: _blockedWords,
+                  onChanged: (updated) {
+                    setState(() => _blockedWords = updated);
+                    NativeChannel.updatePreference(AppKeys.keyCustomBlockedWords, updated);
+                  },
+                ),
+              ],
+              const SectionHeader(title: 'Smart Clipboard Automation'),
+              ToggleSwitchTile(
+                title: 'Auto-Copy OTP / Verification Codes',
+                description: 'Detects 4-8 digit OTP & 2FA security codes across SMS & messaging',
+                value: _autoCopyOtp,
+                icon: Icons.pin_outlined,
+                onChanged: (val) {
+                  setState(() => _autoCopyOtp = val);
+                  NativeChannel.updatePreference(AppKeys.keyAutoCopyOtp, val);
+                },
+              ),
+              ToggleSwitchTile(
+                title: 'Auto-Copy Transaction IDs',
+                description: 'Detects IDs from Apple Pay, Google Pay, PayPal, Stripe, UPI & global Bank SMS',
+                value: _autoCopyTrx,
+                icon: Icons.receipt_long_rounded,
+                onChanged: (val) {
+                  setState(() => _autoCopyTrx = val);
+                  NativeChannel.updatePreference(AppKeys.keyAutoCopyTrx, val);
                 },
               ),
             ],
-            const SectionHeader(title: 'Smart Clipboard Automation'),
-            ToggleSwitchTile(
-              title: 'Auto-Copy OTP / Verification Codes',
-              description: 'Detects 4-8 digit OTP & 2FA security codes across SMS & messaging',
-              value: _autoCopyOtp,
-              icon: Icons.pin_outlined,
-              onChanged: (val) {
-                setState(() => _autoCopyOtp = val);
-                NativeChannel.updatePreference(AppKeys.keyAutoCopyOtp, val);
-              },
-            ),
-            ToggleSwitchTile(
-              title: 'Auto-Copy Transaction IDs',
-              description: 'Detects IDs from Apple Pay, Google Pay, PayPal, Stripe, UPI & global Bank SMS',
-              value: _autoCopyTrx,
-              icon: Icons.receipt_long_rounded,
-              onChanged: (val) {
-                setState(() => _autoCopyTrx = val);
-                NativeChannel.updatePreference(AppKeys.keyAutoCopyTrx, val);
-              },
-            ),
-          ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }

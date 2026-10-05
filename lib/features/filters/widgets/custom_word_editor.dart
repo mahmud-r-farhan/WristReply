@@ -5,11 +5,13 @@ import '../../../core/constants/app_colors.dart';
 class CustomWordEditor extends StatefulWidget {
   final List<String> words;
   final ValueChanged<List<String>> onChanged;
+  final int maxWords;
 
   const CustomWordEditor({
     super.key,
     required this.words,
     required this.onChanged,
+    this.maxWords = 24,
   });
 
   @override
@@ -19,14 +21,28 @@ class CustomWordEditor extends StatefulWidget {
 class _CustomWordEditorState extends State<CustomWordEditor> {
   final TextEditingController _controller = TextEditingController();
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   void _addWord() {
     final text = _controller.text.trim().toLowerCase();
-    if (text.isNotEmpty && !widget.words.contains(text)) {
+    if (text.isEmpty) {
+      Navigator.pop(context);
+      return;
+    }
+    if (widget.words.length >= widget.maxWords) {
+      Navigator.pop(context);
+      return;
+    }
+    if (!widget.words.contains(text)) {
       final updated = List<String>.from(widget.words)..add(text);
       widget.onChanged(updated);
-      _controller.clear();
-      Navigator.pop(context);
     }
+    _controller.clear();
+    Navigator.pop(context);
   }
 
   void _removeWord(String word) {
@@ -35,7 +51,7 @@ class _CustomWordEditorState extends State<CustomWordEditor> {
   }
 
   void _showAddDialog() {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surfaceRaised,
@@ -43,6 +59,7 @@ class _CustomWordEditorState extends State<CustomWordEditor> {
         content: TextField(
           controller: _controller,
           autofocus: true,
+          maxLength: 32,
           style: const TextStyle(color: AppColors.textPrimary),
           decoration: const InputDecoration(
             hintText: 'Enter keyword to shield...',
@@ -96,14 +113,19 @@ class _CustomWordEditorState extends State<CustomWordEditor> {
           ),
         const SizedBox(height: 10),
         OutlinedButton.icon(
-          onPressed: _showAddDialog,
+          onPressed: widget.words.length >= widget.maxWords ? null : _showAddDialog,
           icon: const Icon(Icons.add, size: 16, color: AppColors.accentDanger),
-          label: const Text('ADD CUSTOM BLOCKED WORD', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+          label: Text(
+            widget.words.length >= widget.maxWords
+                ? 'MAX ${widget.maxWords} WORDS REACHED'
+                : 'ADD CUSTOM BLOCKED WORD',
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          ),
           style: OutlinedButton.styleFrom(
             foregroundColor: AppColors.accentDanger,
             side: BorderSide(color: AppColors.accentDanger.withValues(alpha: 0.5)),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            minimumSize: const Size(double.infinity, 44),
+            minimumSize: const Size(double.infinity, 48),
           ),
         ),
       ],

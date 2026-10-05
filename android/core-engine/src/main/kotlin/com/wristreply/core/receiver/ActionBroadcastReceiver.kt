@@ -12,8 +12,17 @@ import com.wristreply.core.context.LocationProviderHelper
 import com.wristreply.core.metrics.MetricsLedger
 
 /**
- * Executes headless background dispatch via RemoteInput when an action pill is tapped
- * on a connected smartwatch or inside the system notification tray.
+ * Executes headless background dispatch via [RemoteInput] when an action pill
+ * is tapped on a connected smartwatch or inside the system notification tray.
+ *
+ * The receiver is intentionally thin — all it does is:
+ *  1. Pull the user-selected pill text out of the intent extras.
+ *  2. Resolve any location pin to a real Google Maps URL (if granted).
+ *  3. Attach the text to the messaging app's [RemoteInput] result bundle.
+ *  4. Fire the original [PendingIntent] (which the messaging app already
+ *     constructed and trusts) so the reply is delivered without unlocking
+ *     the phone.
+ *  5. Cancel the companion notification + bump the dispatch metrics.
  */
 class ActionBroadcastReceiver : BroadcastReceiver() {
 
@@ -46,15 +55,25 @@ class ActionBroadcastReceiver : BroadcastReceiver() {
         RemoteInput.addResultsToIntent(arrayOf(remoteInput), fillInIntent, replyBundle)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            RemoteInput.setResultsSource(fillInIntent, RemoteInput.SOURCE_FREE_FORM_INPUT)
+            try {
+                RemoteInput.setResultsSource(fillInIntent, RemoteInput.SOURCE_FREE_FORM_INPUT)
+            } catch (_: Exception) {
+                // Some OEM ROMs gate the SOURCE_* constants behind hidden APIs.
+            }
         }
 
         try {
             originalPendingIntent.send(context, 0, fillInIntent)
             MetricsLedger.recordDispatch()
             if (notificationId != -1) {
-                NotificationManagerCompat.from(context).cancel(notificationId)
+                try {
+                    NotificationManagerCompat.from(context).cancel(notificationId)
+                } catch (_: SecurityException) {}
             }
-        } catch (_: Exception) {}
+        } catch (_: PendingIntent.CanceledException) {
+            // The hosting messaging app revoked its PendingIntent (e.g. notification dismissed).
+        } catch (_: Exception) {
+            // Swallow — there's nothing actionable for the user here.
+        }
     }
 }

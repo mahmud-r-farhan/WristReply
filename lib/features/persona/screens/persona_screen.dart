@@ -29,14 +29,13 @@ class _PersonaScreenState extends State<PersonaScreen> {
 
   Future<void> _loadPreferences() async {
     final prefs = await NativeChannel.getPreferences();
-    if (mounted) {
-      setState(() {
-        _selectedTone = prefs[AppKeys.keyConversationTone] as String? ?? 'casual';
-        _fallbackPills = (prefs[AppKeys.keyCustomFallbackPills] as List?)?.cast<String>() ?? _fallbackPills;
-        _chronoBias = prefs[AppKeys.keyChronoBiasEnabled] as bool? ?? true;
-        _locationPin = prefs[AppKeys.keyLocationPinEnabled] as bool? ?? false;
-      });
-    }
+    if (!mounted) return;
+    setState(() {
+      _selectedTone = prefs[AppKeys.keyConversationTone] as String? ?? 'casual';
+      _fallbackPills = (prefs[AppKeys.keyCustomFallbackPills] as List?)?.cast<String>() ?? _fallbackPills;
+      _chronoBias = prefs[AppKeys.keyChronoBiasEnabled] as bool? ?? true;
+      _locationPin = prefs[AppKeys.keyLocationPinEnabled] as bool? ?? false;
+    });
   }
 
   Future<void> _updateTone(String tone) async {

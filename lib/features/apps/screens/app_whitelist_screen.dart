@@ -12,7 +12,7 @@ class AppWhitelistScreen extends StatefulWidget {
 }
 
 class _AppWhitelistScreenState extends State<AppWhitelistScreen> {
-  List<Map<String, dynamic>> _apps = [];
+  List<DiscoveredApp> _apps = const [];
   bool _isLoading = true;
 
   @override
@@ -23,20 +23,20 @@ class _AppWhitelistScreenState extends State<AppWhitelistScreen> {
 
   Future<void> _loadDiscoveredApps() async {
     final apps = await NativeChannel.getDiscoveredApps();
-    if (mounted) {
-      setState(() {
-        _apps = apps;
-        _isLoading = false;
-      });
-    }
+    if (!mounted) return;
+    setState(() {
+      _apps = apps;
+      _isLoading = false;
+    });
   }
 
   Future<void> _toggleApp(int index, bool value) async {
-    final pkg = _apps[index]['packageName'] as String;
+    final app = _apps[index];
     setState(() {
-      _apps[index]['isEnabled'] = value;
+      _apps = List<DiscoveredApp>.from(_apps)..[index] =
+          DiscoveredApp(packageName: app.packageName, appName: app.appName, isEnabled: value);
     });
-    await NativeChannel.setAppWhitelisted(pkg, value);
+    await NativeChannel.setAppWhitelisted(app.packageName, value);
   }
 
   @override
@@ -55,9 +55,6 @@ class _AppWhitelistScreenState extends State<AppWhitelistScreen> {
                       itemCount: _apps.length,
                       itemBuilder: (context, index) {
                         final app = _apps[index];
-                        final name = app['appName'] as String;
-                        final pkg = app['packageName'] as String;
-                        final isEnabled = app['isEnabled'] as bool;
 
                         return Container(
                           margin: const EdgeInsets.only(bottom: 10),
@@ -84,12 +81,12 @@ class _AppWhitelistScreenState extends State<AppWhitelistScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      name,
+                                      app.appName,
                                       style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      pkg,
+                                      app.packageName,
                                       style: const TextStyle(color: AppColors.textTertiary, fontSize: 11),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -98,7 +95,7 @@ class _AppWhitelistScreenState extends State<AppWhitelistScreen> {
                                 ),
                               ),
                               Switch(
-                                value: isEnabled,
+                                value: app.isEnabled,
                                 onChanged: (val) => _toggleApp(index, val),
                                 activeThumbColor: AppColors.accentMint,
                               ),

@@ -26,6 +26,7 @@ class _GeneralSettingsScreenState extends State<GeneralSettingsScreen> with Widg
   int _pillsPerMessage = 3;
   bool _respectDnd = true;
   bool _sleepWindow = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -49,50 +50,44 @@ class _GeneralSettingsScreenState extends State<GeneralSettingsScreen> with Widg
 
   Future<void> _loadSettings() async {
     final hasPermission = await NativeChannel.isNotificationPermissionGranted();
+    if (!mounted) return;
     final prefs = await NativeChannel.getPreferences();
+    if (!mounted) return;
 
-    if (mounted) {
-      setState(() {
-        _masterEnabled = prefs[AppKeys.keyMasterEnabled] as bool? ?? true;
-        _replaceMode = prefs[AppKeys.keyReplaceMode] as bool? ?? false;
-        _privacyMode = prefs[AppKeys.keyPrivacyMode] as bool? ?? false;
-        _pillsPerMessage = prefs[AppKeys.keyPillsPerMessage] as int? ?? 3;
-        _respectDnd = prefs[AppKeys.keyRespectDnd] as bool? ?? true;
-        _sleepWindow = prefs[AppKeys.keySleepWindowEnabled] as bool? ?? false;
+    setState(() {
+      _masterEnabled = prefs[AppKeys.keyMasterEnabled] as bool? ?? true;
+      _replaceMode = prefs[AppKeys.keyReplaceMode] as bool? ?? false;
+      _privacyMode = prefs[AppKeys.keyPrivacyMode] as bool? ?? false;
+      _pillsPerMessage = prefs[AppKeys.keyPillsPerMessage] as int? ?? 3;
+      _respectDnd = prefs[AppKeys.keyRespectDnd] as bool? ?? true;
+      _sleepWindow = prefs[AppKeys.keySleepWindowEnabled] as bool? ?? false;
 
-        _hasNotificationPermission = hasPermission;
-        final savedNotifSetting = prefs[AppKeys.keyNotificationsEnabled] as bool? ?? true;
+      _hasNotificationPermission = hasPermission;
+      final savedNotifSetting = prefs[AppKeys.keyNotificationsEnabled] as bool? ?? true;
 
-        if (!hasPermission) {
-          _notificationsEnabled = false;
-          NativeChannel.updatePreference(AppKeys.keyNotificationsEnabled, false);
-        } else {
-          _notificationsEnabled = savedNotifSetting;
-        }
-      });
-    }
+      if (!hasPermission) {
+        _notificationsEnabled = false;
+        // Fire-and-forget; safe because the host Activity stays in scope.
+        NativeChannel.updatePreference(AppKeys.keyNotificationsEnabled, false);
+      } else {
+        _notificationsEnabled = savedNotifSetting;
+      }
+      _isLoading = false;
+    });
   }
 
   Future<void> _onNotificationToggleChanged(bool val) async {
     if (val) {
       if (!_hasNotificationPermission) {
         await NativeChannel.requestNotificationPermission();
+        if (!mounted) return;
         final granted = await NativeChannel.isNotificationPermissionGranted();
-        if (mounted) {
-          if (granted) {
-            setState(() {
-              _hasNotificationPermission = true;
-              _notificationsEnabled = true;
-            });
-            await NativeChannel.updatePreference(AppKeys.keyNotificationsEnabled, true);
-          } else {
-            setState(() {
-              _hasNotificationPermission = false;
-              _notificationsEnabled = false;
-            });
-            await NativeChannel.updatePreference(AppKeys.keyNotificationsEnabled, false);
-          }
-        }
+        if (!mounted) return;
+        setState(() {
+          _hasNotificationPermission = granted;
+          _notificationsEnabled = granted;
+        });
+        await NativeChannel.updatePreference(AppKeys.keyNotificationsEnabled, granted);
       } else {
         setState(() => _notificationsEnabled = true);
         await NativeChannel.updatePreference(AppKeys.keyNotificationsEnabled, true);
@@ -154,6 +149,17 @@ class _GeneralSettingsScreenState extends State<GeneralSettingsScreen> with Widg
               ),
               const OemManagementSection(),
               const SettingsBrandingFooter(),
+              if (_isLoading)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                    child: SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accentMint),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

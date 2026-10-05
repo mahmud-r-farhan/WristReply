@@ -15,27 +15,45 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
-  bool _isLive = true;
+class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingObserver {
+  bool _isLive = false;
   int _dispatchedCount = 0;
   int _avgLatencyMs = 18;
+  int _cacheHits = 0;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadMetrics();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _loadMetrics();
+    }
   }
 
   Future<void> _loadMetrics() async {
     final live = await NativeChannel.isListenerRunning();
+    if (!mounted) return;
     final metrics = await NativeChannel.getEngineMetrics();
-    if (mounted) {
-      setState(() {
-        _isLive = live;
-        _dispatchedCount = (metrics['repliesDispatched'] as num?)?.toInt() ?? 0;
-        _avgLatencyMs = (metrics['avgLatencyMs'] as num?)?.toInt() ?? 18;
-      });
-    }
+    if (!mounted) return;
+    setState(() {
+      _isLive = live;
+      _dispatchedCount = metrics.repliesDispatched;
+      _avgLatencyMs = metrics.avgLatencyMs;
+      _cacheHits = metrics.cacheHits;
+      _isLoading = false;
+    });
   }
 
   @override
@@ -55,18 +73,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       body: SafeArea(
         child: isExpanded
-            ? DashboardExpandedView(
-                isLive: _isLive,
-                dispatchedCount: _dispatchedCount,
-                avgLatencyMs: _avgLatencyMs,
-                onRefresh: _loadMetrics,
-              )
-            : DashboardCompactView(
-                isLive: _isLive,
-                dispatchedCount: _dispatchedCount,
-                avgLatencyMs: _avgLatencyMs,
-                onRefresh: _loadMetrics,
-              ),
+                ? DashboardExpandedView(
+                    isLive: _isLive,
+                    isLoading: _isLoading,
+                    dispatchedCount: _dispatchedCount,
+                    avgLatencyMs: _avgLatencyMs,
+                    cacheHits: _cacheHits,
+                    onRefresh: _loadMetrics,
+                  )
+                : DashboardCompactView(
+                    isLive: _isLive,
+                    isLoading: _isLoading,
+                    dispatchedCount: _dispatchedCount,
+                    avgLatencyMs: _avgLatencyMs,
+                    cacheHits: _cacheHits,
+                    onRefresh: _loadMetrics,
+                  ),
       ),
     );
   }

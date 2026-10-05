@@ -44,21 +44,20 @@ class _AutomationScreenState extends State<AutomationScreen> {
 
   Future<void> _loadPreferences() async {
     final prefs = await NativeChannel.getPreferences();
-    if (mounted) {
-      setState(() {
-        _delayedEnabled = prefs[AppKeys.keyDelayedReplyEnabled] as bool? ?? false;
-        _delayMinutes = prefs[AppKeys.keyDelayedReplyMinutes] as int? ?? 5;
-        final delayedTpl = prefs[AppKeys.keyDelayedReplyTemplate] as String?;
-        if (delayedTpl != null && delayedTpl.isNotEmpty) _delayedController.text = delayedTpl;
+    if (!mounted) return;
+    setState(() {
+      _delayedEnabled = prefs[AppKeys.keyDelayedReplyEnabled] as bool? ?? false;
+      _delayMinutes = prefs[AppKeys.keyDelayedReplyMinutes] as int? ?? 5;
+      final delayedTpl = prefs[AppKeys.keyDelayedReplyTemplate] as String?;
+      if (delayedTpl != null && delayedTpl.isNotEmpty) _delayedController.text = delayedTpl;
 
-        _drivingEnabled = prefs[AppKeys.keyDrivingModeEnabled] as bool? ?? false;
-        _drivingAutoReply = prefs[AppKeys.keyDrivingAutoReplyEnabled] as bool? ?? false;
-        final drivingTpl = prefs[AppKeys.keyDrivingTemplate] as String?;
-        if (drivingTpl != null && drivingTpl.isNotEmpty) _drivingController.text = drivingTpl;
+      _drivingEnabled = prefs[AppKeys.keyDrivingModeEnabled] as bool? ?? false;
+      _drivingAutoReply = prefs[AppKeys.keyDrivingAutoReplyEnabled] as bool? ?? false;
+      final drivingTpl = prefs[AppKeys.keyDrivingTemplate] as String?;
+      if (drivingTpl != null && drivingTpl.isNotEmpty) _drivingController.text = drivingTpl;
 
-        _calendarEnabled = prefs[AppKeys.keyCalendarModeEnabled] as bool? ?? false;
-      });
-    }
+      _calendarEnabled = prefs[AppKeys.keyCalendarModeEnabled] as bool? ?? false;
+    });
   }
 
   @override

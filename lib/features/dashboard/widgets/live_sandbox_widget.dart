@@ -1,28 +1,50 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/platform/native_channel.dart';
 import '../../../shared/widgets/reply_pill_preview.dart';
 
-/// Live Testing Sandbox widget enabling simulated on-device replies without a second phone.
+/// Live Testing Sandbox widget enabling simulated on-device replies without a
+/// second phone. Mirrors the public WristReply playground functionality and
+/// is reused by the dashboard and the GitHub Pages playground.
 class LiveSandboxWidget extends StatefulWidget {
-  const LiveSandboxWidget({super.key});
+  /// Optional pre-populated text shown on first build.
+  final String seedText;
+
+  /// Optional callback invoked when a pill is "dispatched" in sandbox mode.
+  final ValueChanged<String>? onDispatched;
+
+  /// Whether to show the dispatch-notice row.
+  final bool showDispatchFeedback;
+
+  const LiveSandboxWidget({
+    super.key,
+    this.seedText = 'Hey, are you free for a quick call right now?',
+    this.onDispatched,
+    this.showDispatchFeedback = true,
+  });
 
   @override
   State<LiveSandboxWidget> createState() => _LiveSandboxWidgetState();
 }
 
 class _LiveSandboxWidgetState extends State<LiveSandboxWidget> {
-  final TextEditingController _controller = TextEditingController(
-    text: 'Hey, are you free for a quick call right now?',
-  );
-  List<String> _generatedPills = [];
+  late final TextEditingController _controller;
+  List<String> _generatedPills = const [];
   bool _isLoading = false;
   String? _dispatchedNotice;
 
   @override
   void initState() {
     super.initState();
-    _generatePills();
+    _controller = TextEditingController(text: widget.seedText);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _generatePills());
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   Future<void> _generatePills() async {
@@ -31,13 +53,24 @@ class _LiveSandboxWidgetState extends State<LiveSandboxWidget> {
     setState(() => _isLoading = true);
 
     final pills = await NativeChannel.simulateSmartReply(text);
-    if (mounted) {
-      setState(() {
-        _generatedPills = pills.isNotEmpty ? pills : ['Free now, call!', 'Busy, text me', '10 min pls'];
-        _isLoading = false;
-        _dispatchedNotice = null;
-      });
+    if (!mounted) return;
+    setState(() {
+      _generatedPills = pills.isNotEmpty
+          ? pills
+          : const ['Free now, call!', 'Busy, text me', '10 min pls'];
+      _isLoading = false;
+      _dispatchedNotice = null;
+    });
+  }
+
+  void _handlePillTap(String pill) {
+    if (widget.onDispatched != null) {
+      widget.onDispatched!(pill);
     }
+    HapticFeedback.lightImpact();
+    setState(() {
+      _dispatchedNotice = 'Simulated dispatch: "$pill"';
+    });
   }
 
   @override
@@ -88,7 +121,7 @@ class _LiveSandboxWidgetState extends State<LiveSandboxWidget> {
               ),
               suffixIcon: IconButton(
                 icon: const Icon(Icons.send_rounded, size: 18, color: AppColors.accentMint),
-                onPressed: _generatePills,
+                onPressed: _isLoading ? null : _generatePills,
               ),
             ),
             onSubmitted: (_) => _generatePills(),
@@ -103,17 +136,10 @@ class _LiveSandboxWidgetState extends State<LiveSandboxWidget> {
             spacing: 8,
             runSpacing: 8,
             children: _generatedPills.map((pill) {
-              return ReplyPillPreview(
-                text: pill,
-                onTap: () {
-                  setState(() {
-                    _dispatchedNotice = 'Simulated dispatch: "$pill"';
-                  });
-                },
-              );
-            }).toList(),
+                return ReplyPillPreview(text: pill, onTap: () => _handlePillTap(pill));
+              }).toList(),
           ),
-          if (_dispatchedNotice != null) ...[
+          if (widget.showDispatchFeedback && _dispatchedNotice != null) ...[
             const SizedBox(height: 10),
             Row(
               children: [
@@ -122,7 +148,11 @@ class _LiveSandboxWidgetState extends State<LiveSandboxWidget> {
                 Expanded(
                   child: Text(
                     _dispatchedNotice!,
-                    style: const TextStyle(color: AppColors.accentMint, fontSize: 12, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      color: AppColors.accentMint,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],

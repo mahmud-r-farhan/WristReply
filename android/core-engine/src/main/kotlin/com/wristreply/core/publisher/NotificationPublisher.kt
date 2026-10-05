@@ -18,32 +18,51 @@ import java.util.concurrent.ConcurrentLinkedQueue
 
 /**
  * Publishes silent companion notifications containing interactive Smart Reply pills.
- * Guarantees zero sound, zero vibration, and low importance.
+ *
+ * Guarantees:
+ *  - IMPORTANCE_LOW channel → zero sound, zero vibration, no badge.
+ *  - Per-process cap on simultaneous companions to avoid notification spam.
+ *  - Each tap routes through [ActionBroadcastReceiver] which dispatches via
+ *    the original messaging app's PendingIntent (no UI launch required).
  */
 object NotificationPublisher {
 
     const val CHANNEL_ID = "smart_reply_channel"
+    private const val CHANNEL_NAME = "Smart Reply Actions"
+    private const val CHANNEL_DESCRIPTION = "Silent contextual quick reply pills"
     private const val MAX_LIVE_COMPANIONS = 3
+
     private val liveCompanionIds = ConcurrentLinkedQueue<Int>()
+    @Volatile
+    private var channelRegistered = false
 
     fun ensureChannel(context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Smart Reply Actions",
-                NotificationManager.IMPORTANCE_LOW
-            ).apply {
-                description = "Silent contextual quick reply pills"
-                setSound(null, null)
-                enableVibration(false)
-                enableLights(false)
-                setShowBadge(false)
-            }
-            val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
-            manager?.createNotificationChannel(channel)
+        if (channelRegistered) return
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            channelRegistered = true
+            return
         }
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            CHANNEL_NAME,
+            NotificationManager.IMPORTANCE_LOW
+        ).apply {
+            description = CHANNEL_DESCRIPTION
+            setSound(null, null)
+            enableVibration(false)
+            enableLights(false)
+            setShowBadge(false)
+        }
+        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+        manager?.createNotificationChannel(channel)
+        channelRegistered = true
     }
 
+    /**
+     * Renders a silent companion notification containing interactive smart-reply
+     * pills for the supplied [suggestions]. Each pill tap dispatches the
+     * underlying [PendingIntent] via [ActionBroadcastReceiver].
+     */
     fun publishPills(
         context: Context,
         notificationId: Int,
@@ -55,6 +74,7 @@ object NotificationPublisher {
     ) {
         val prefsCache = com.wristreply.core.cache.UserPreferencesHotCache(context)
         if (!prefsCache.isNotificationsEnabled()) return
+        if (suggestions.isEmpty()) return
 
         ensureChannel(context)
         val displayText = if (isPrivacyMode) "••••••••••" else target.messageText
@@ -76,8 +96,9 @@ object NotificationPublisher {
         }
         builder.addExtras(extras)
 
-        // Add Smart Reply action pills
-        val pills = suggestions.take(3).toMutableList()
+        // Cap at 5 pills (Wear OS comfortably renders that on most screens).
+        val maxPills = prefsCache.getPillsPerMessage().coerceIn(1, 5)
+        val pills = suggestions.take(maxPills).toMutableList()
         if (appendLocationPin) {
             LocationPillResolver.resolveLocationPill(target.messageText)?.let { locPill ->
                 pills.add(locPill)
@@ -103,20 +124,29 @@ object NotificationPublisher {
 
         readAction?.let { builder.addAction(ReadActionResolver.buildReadPill(it)) }
 
-        // Evict older companions if threshold exceeded
+        // Evict older companions if the threshold is exceeded.
         while (liveCompanionIds.size >= MAX_LIVE_COMPANIONS) {
             val oldId = liveCompanionIds.poll() ?: break
-            NotificationManagerCompat.from(context).cancel(oldId)
+            try {
+                NotificationManagerCompat.from(context).cancel(oldId)
+            } catch (_: SecurityException) {}
         }
 
         try {
             NotificationManagerCompat.from(context).notify(notificationId, builder.build())
             liveCompanionIds.add(notificationId)
-        } catch (_: SecurityException) {}
+        } catch (_: SecurityException) {
+            // POST_NOTIFICATIONS revoked between channel creation and notify.
+        }
     }
 
     fun cancelCompanion(context: Context, notificationId: Int) {
         liveCompanionIds.remove(notificationId)
-        NotificationManagerCompat.from(context).cancel(notificationId)
+        try {
+            NotificationManagerCompat.from(context).cancel(notificationId)
+        } catch (_: SecurityException) {}
     }
+
+    /** Number of currently active companions, exposed for diagnostics. */
+    fun activeCompanionCount(): Int = liveCompanionIds.size
 }
