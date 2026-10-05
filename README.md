@@ -16,6 +16,8 @@
 
 </div>
 
+[![WristReply AI Video Demo](https://youtube.com)](https://www.youtube.com/watch?v=NNh5jE2VE5g)
+
 ---
 
 ## 🌟 Key architecture & highlights
