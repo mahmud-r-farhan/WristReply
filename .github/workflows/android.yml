@@ -65,7 +65,18 @@ jobs:
           exit 1
 
       - name: Build debug APK
+        id: apkdebug
+        continue-on-error: true
         run: flutter build apk --debug
+
+      - name: Surface APK build failure
+        if: steps.apkdebug.outcome == 'failure'
+        run: |
+          set +e
+          flutter build apk --debug > /tmp/apk.log 2>&1
+          grep -E '^e: |^error: |Error:|What went wrong|Caused by: |FAILURE' /tmp/apk.log | sort -u |
+            base64 -w 2400 | awk '{ print "::error title=apk-b64-" NR "::" $0 }'
+          exit 1
 
       - name: Build release APK (debug-signed)
         run: flutter build apk --release
@@ -134,7 +145,10 @@ jobs:
         run: |
           set +e
           ./gradlew :core-engine:testDebugUnitTest --stacktrace > /tmp/gradle.log 2>&1
-          echo "::error title=gradle::$(grep -E 'error:|FAILURE|What went wrong|Caused by|> Task|Execution failed|e: ' /tmp/gradle.log | tail -n 25 | tr '\n' ' ' | cut -c1-1800)"
+          # Runner logs cannot be downloaded from every environment, so emit the
+          # compiler diagnostics as base64 annotations readable via the API.
+          grep -E '^e: |^error: |What went wrong|Caused by: ' /tmp/gradle.log | sort -u |
+            base64 -w 2400 | awk '{ print "::error title=gradle-b64-" NR "::" $0 }'
           exit 1
 
       - name: Build core-engine AAR
