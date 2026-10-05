@@ -205,8 +205,7 @@ action mirroring: the injected actions appear on the watch as stock quick replie
 
 ### 5.1 Colour tokens
 
-`lib/core/constants/app_colors.dart`, `playground/assets/styles.css` `:root` and this table are the same
-palette:
+`lib/core/constants/app_colors.dart` and this table share the same palette:
 
 | Token | Value | Use |
 | --- | --- | --- |
@@ -226,8 +225,7 @@ palette:
 ### 5.2 Typography
 
 The Flutter app declares no bundled fonts and uses the platform default typeface, so it inherits the OEM
-font and needs no extra APK weight. The web playground uses Space Grotesk (display), Inter (body) and
-JetBrains Mono (code) from Google Fonts, with system fallbacks.
+font and needs no extra APK weight.
 
 ### 5.3 Kinetic specs and touch ergonomics
 
@@ -269,9 +267,5 @@ this through `repository/OemKeepAliveManager.kt`:
 | Dart static analysis | `flutter analyze` | `flutter.yml` |
 | Dart tests | `flutter test` | `flutter.yml` |
 | Kotlin JUnit (8 classes) | `./gradlew :core-engine:testDebugUnitTest` | `android.yml` |
-| Playground parity (53 assertions) | `node --test playground/test/*.mjs` | `flutter.yml` |
 | Documentation lint | `npx markdownlint-cli2 "**/*.md"` | `docs.yml` |
 
-The playground port in `playground/assets/engine.js` is regenerated from the Kotlin sources, so a change
-to a bank, dictionary or threshold shows up as a parity failure rather than silent drift. See
-[`playground/README.md`](playground/README.md).

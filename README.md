@@ -14,8 +14,6 @@
 [![Privacy](https://img.shields.io/badge/Privacy-100%25%20on--device-green)](#-privacy--zero-cloud-guarantee)
 [![INTERNET](https://img.shields.io/badge/INTERNET-not%20declared-critical)](#-privacy--zero-cloud-guarantee)
 
-**[▶ Open the live playground](playground/index.html)** — a zero-build static demo of the reply engine.
-
 </div>
 
 ---
@@ -46,8 +44,7 @@
   and 06:59.
 - **OLED dark utility cockpit** — the Flutter UI manages whitelists, persona pills, sleep gates and a
   live test sandbox that mirrors the Kotlin contract.
-- **Static web playground** — [`playground/`](playground/) runs the same decision logic in the browser
-  with Tailwind + AOS from CDN, no build step and no network calls.
+
 
 ---
 
@@ -126,11 +123,6 @@ WristReply/
 │   ├── core/                   # Native MethodChannel bridge, tokens, theme
 │   ├── features/               # Onboarding, dashboard, apps, persona, filters…
 │   └── shared/                 # Reply pills, metrics, state badges
-├── playground/                 # 🌐 static web playground (zero build step)
-│   ├── index.html              # Tailwind + AOS from CDN, phone & watch mockups
-│   ├── assets/engine.js        # JS port of the Kotlin engine
-│   ├── assets/app.js           # UI controller
-│   └── test/                   # node:test parity + markup suites
 └── test/                       # Dart unit + widget tests
 ```
 
@@ -158,7 +150,6 @@ The Play Console Data Safety form can honestly state:
 - **Flutter** 3.47.6 (Dart 3.13.5) — pinned in `.github/workflows/`, constrained in `pubspec.yaml`
 - **JDK** 17
 - **Android SDK** API 34+ (min SDK 26, compile SDK 36)
-- **Node.js** 18.13+ — only for the playground tests
 
 ### 1 · Run the Flutter cockpit
 
@@ -189,23 +180,7 @@ cd android
 # → build/core-engine/outputs/aar/core-engine-release.aar
 ```
 
-### 5 · Open the web playground
-
-The playground is static — no build step, no dependencies.
-
-```bash
-cd playground
-python3 -m http.server 8080
-# → http://localhost:8080
-```
-
-Run its parity tests (they assert the same expectations as the Kotlin JUnit suite):
-
-```bash
-node --test playground/test/engine.test.mjs playground/test/markup.test.mjs
-```
-
-### 6 · Embed the headless engine in your own Android app
+### 5 · Embed the headless engine in your own Android app
 
 ```kotlin
 class YourApp : Application() {
@@ -225,7 +200,7 @@ That is it — incoming notifications start receiving reply pills through the Wr
 
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
-| [`.github/workflows/flutter.yml`](.github/workflows/flutter.yml) | push / PR to `main` | `flutter analyze`, `flutter test` with coverage, playground node tests |
+| [`.github/workflows/flutter.yml`](.github/workflows/flutter.yml) | push / PR to `main` | `flutter analyze`, `flutter test` with coverage |
 | [`.github/workflows/android.yml`](.github/workflows/android.yml) | push / PR to `main` | `flutter build apk` (debug + release), app bundle, `:core-engine:testDebugUnitTest`, AAR |
 | [`.github/workflows/docs.yml`](.github/workflows/docs.yml) | push / PR touching `**.md` | `markdownlint-cli2` over every Markdown file |
 | [`.github/workflows/release.yml`](.github/workflows/release.yml) | tag `v*.*.*` or manual | AAR + AAB + APK uploaded to a GitHub Release |
@@ -236,9 +211,6 @@ To cut a release:
 git tag v0.2.0
 git push origin v0.2.0
 ```
-
-> The old `playground.yml` workflow (GitHub Pages deployment of a Flutter Web build) was removed: the
-> playground is now a static page with no build step, so there is nothing to compile or deploy.
 
 ---
 
@@ -264,5 +236,5 @@ Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE).
 - [`CHANGELOG.md`](CHANGELOG.md) — full release history.
 - [`engineering.md`](engineering.md) — authoritative architectural blueprint.
 - [`aso.md`](aso.md) — store listing and ASO copy.
-- [`playground/README.md`](playground/README.md) — how the static playground is built and tested.
 - [`android/core-engine/README.md`](android/core-engine/README.md) — embedding the Kotlin engine.
+

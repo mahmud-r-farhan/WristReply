@@ -30,7 +30,6 @@ analyzer:
     - "**/*.g.dart"
     - "**/*.freezed.dart"
     - build/**
-    - playground/build/**
 
 linter:
   rules:

@@ -11,7 +11,6 @@ RTOS smartwatches. The repository is split into three deliverables:
 - `android/core-engine/` — pure Kotlin `:core-engine` library with **zero Flutter dependencies**,
   publishable as a standalone AAR or Maven artifact.
 - `lib/` — Flutter presentation layer (Android cockpit).
-- `playground/` — static web playground that mirrors the engine's decision logic in the browser.
 
 The hard architectural boundary is: **the background daemon never boots the Flutter runtime.** All
 engine logic runs in pure Kotlin; the Flutter app is strictly a UI/UX layer that talks to the engine
@@ -28,7 +27,6 @@ through a `MethodChannel`.
 | JDK | 17 | `android/app/build.gradle.kts`, CI |
 | Gradle | 8.14 | `android/gradle/wrapper/gradle-wrapper.properties` |
 | Android | min SDK 26, compile SDK 36 | `android/app/build.gradle.kts` |
-| Node.js | 18.13+ | playground tests only |
 
 ## Coding Conventions
 
@@ -61,14 +59,6 @@ through a `MethodChannel`.
 - Tests must be deterministic — never assert on a colour, count or string that depends on the wall
   clock, the locale of the runner, or a previous pump in the same tree.
 
-### Playground (`playground/`)
-
-- `assets/engine.js` is a **port** of the Kotlin engine, generated from the Kotlin sources. If you change
-  a bank, a blocked word or a threshold in Kotlin, update the port and its parity test in the same
-  commit — CI runs `node --test` on every pull request and will fail the build otherwise.
-- Keep the page dependency-free: no bundler, no `node_modules`, no build step. CDN assets must always
-  have a CSS fallback in `assets/styles.css`.
-
 ## Repository Etiquette
 
 1. **No secret keys, signing material, or `key.properties`** — `.gitignore` already excludes these.
@@ -100,12 +90,6 @@ cd android
 
 # 5. Build the standalone AAR
 ./gradlew :core-engine:assembleRelease
-
-# 6. Playground parity tests (no install needed)
-node --test playground/test/engine.test.mjs playground/test/markup.test.mjs
-
-# 7. Open the playground
-cd playground && python3 -m http.server 8080
 ```
 
 If `./gradlew` fails with *`flutter.sdk` not set*, run `flutter pub get` once from the repository root
@@ -128,7 +112,7 @@ There is no enforced line-length gate for Dart in CI — `flutter analyze` is th
 
 | Workflow | Runs on | Checks |
 | --- | --- | --- |
-| `flutter.yml` | every push / PR to `main` | analyze, test, lockfile drift, playground node tests |
+| `flutter.yml` | every push / PR to `main` | analyze, test, lockfile drift |
 | `android.yml` | every push / PR to `main` | APK debug + release, app bundle, Kotlin JUnit, AAR |
 | `docs.yml` | push / PR touching `**.md` | Markdown lint |
 | `release.yml` | tag `v*.*.*` or manual | AAR + AAB + APK published to a GitHub Release |

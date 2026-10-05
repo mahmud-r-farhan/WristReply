@@ -98,23 +98,3 @@ jobs:
           path: coverage/lcov.info
           if-no-files-found: warn
 
-  playground:
-    name: Playground engine parity
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: playground
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Setup Node
-        uses: actions/setup-node@v7
-        with:
-          node-version: '22'
-
-      - name: Show Node version
-        run: node --version
-
-      - name: Run engine + markup tests
-        run: node --test test/engine.test.mjs test/markup.test.mjs

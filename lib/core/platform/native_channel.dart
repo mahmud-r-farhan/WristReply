@@ -53,7 +53,7 @@ class DiscoveredApp {
 /// the `com.wristreply.app/engine` [MethodChannel]. Every call swallows
 /// [PlatformException] / [MissingPluginException] and returns a safe default
 /// so the UI stays alive even when the engine is unreachable (e.g. running
-/// the playground on the web).
+/// tests or on an unsupported host).
 class NativeChannel {
   NativeChannel._();
 
@@ -175,7 +175,7 @@ class NativeChannel {
     return _webFallbackEngine(messageText);
   }
 
-  /// Offline mirror of the Kotlin fallback engine, used by the playground.
+  /// Offline mirror of the Kotlin fallback engine, used when the platform channel is unavailable.
   /// Mirrors the same priority order as `core-engine/nlp/FallbackReplyEngine.kt`.
   static List<String> _webFallbackEngine(String text) {
     final lower = text.toLowerCase();

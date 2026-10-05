@@ -12,8 +12,6 @@ runs through on-device libraries (Google ML Kit Smart Reply is a 100% on-device 
   from cloud backup and device transfer.
 - The Flutter UI is only instantiated when the user opens the app — it has no background access to
   notifications.
-- The static `playground/` page runs the engine in the browser; it sends no request that contains
-  message content.
 
 If you discover a violation of this guarantee (for example a manifest diff that adds `INTERNET`), please
 file a private security advisory and we will treat it as a P0 bug.
