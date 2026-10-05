@@ -22,7 +22,7 @@ through a `MethodChannel`.
 | Component | Version | Where it is pinned |
 | --- | --- | --- |
 | Flutter | 3.47.6 | `.github/workflows/*.yml` (minimum 3.38 in `pubspec.yaml`) |
-| Dart SDK | 3.10 | `pubspec.yaml` (`sdk: ^3.10.0`) |
+| Dart SDK | 3.13.5 | shipped with Flutter 3.47.6; `pubspec.lock` requires `>=3.11.0-0` |
 | Kotlin | 2.4.0 | `android/settings.gradle.kts` |
 | AGP | 8.13.0 | `android/settings.gradle.kts` |
 | JDK | 17 | `android/app/build.gradle.kts`, CI |

@@ -7,7 +7,7 @@
 <div align="center">
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.47-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
-[![Dart](https://img.shields.io/badge/Dart-3.10-0175C2?logo=dart&logoColor=white)](lib/)
+[![Dart](https://img.shields.io/badge/Dart-3.13-0175C2?logo=dart&logoColor=white)](lib/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin&logoColor=white)](android/core-engine/)
 [![Java](https://img.shields.io/badge/JDK-17-ED8B00?logo=openjdk&logoColor=white)](android/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
@@ -155,7 +155,7 @@ The Play Console Data Safety form can honestly state:
 
 ### Requirements
 
-- **Flutter** 3.47.6 (Dart 3.10) — pinned in `.github/workflows/`, constrained in `pubspec.yaml`
+- **Flutter** 3.47.6 (Dart 3.13.5) — pinned in `.github/workflows/`, constrained in `pubspec.yaml`
 - **JDK** 17
 - **Android SDK** API 34+ (min SDK 26, compile SDK 36)
 - **Node.js** 18.13+ — only for the playground tests

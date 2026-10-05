@@ -27,8 +27,8 @@ class FallbackReplyEngineTest {
         )
         assertTrue(result.isNotEmpty())
         assertTrue(
-            result.any { it.contains("camino", ignoreCase = true) || it.contains("bien", ignoreCase = true) },
             "Expected Spanish tokens in $result",
+            result.any { it.contains("camino", ignoreCase = true) || it.contains("bien", ignoreCase = true) },
         )
     }
 
@@ -40,8 +40,8 @@ class FallbackReplyEngineTest {
         )
         assertTrue(result.isNotEmpty())
         assertTrue(
-            result.any { it.contains("unterwegs", ignoreCase = true) || it.contains("klar", ignoreCase = true) },
             "Expected German tokens in $result",
+            result.any { it.contains("unterwegs", ignoreCase = true) || it.contains("klar", ignoreCase = true) },
         )
     }
 
@@ -53,8 +53,8 @@ class FallbackReplyEngineTest {
         )
         assertTrue(result.isNotEmpty())
         assertTrue(
-            result.any { it.contains("الطريق") || it.contains("تمام") },
             "Expected Arabic tokens in $result",
+            result.any { it.contains("الطريق") || it.contains("تمام") },
         )
     }
 
@@ -66,8 +66,8 @@ class FallbackReplyEngineTest {
         )
         assertTrue(result.isNotEmpty())
         assertTrue(
-            result.any { it.contains("হ্যাঁ") || it.contains("কথা বলছি") },
             "Expected Bengali tokens in $result",
+            result.any { it.contains("হ্যাঁ") || it.contains("কথা বলছি") },
         )
     }
 
@@ -76,7 +76,7 @@ class FallbackReplyEngineTest {
         val casual = FallbackReplyEngine.resolveFallback("Hola amigo", tone = "casual", applyChronoBias = false)
         val pro = FallbackReplyEngine.resolveFallback("Hola amigo", tone = "professional", applyChronoBias = false)
         assertTrue(casual.isNotEmpty() && pro.isNotEmpty())
-        assertTrue(casual != pro, "Casual vs professional should produce different lists")
+        assertTrue("Casual vs professional should produce different lists", casual != pro)
     }
 
     @Test

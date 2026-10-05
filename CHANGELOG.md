@@ -47,7 +47,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   matching `pubspec.lock` (`shared_preferences 2.5.5`).
 - CI pins Flutter **3.47.6** rather than 3.38.0. Flutter 3.38.0 ships Dart `3.10.0-290.4.beta`, and a
   pre-release does not satisfy `sdk: ^3.10.0`, so `flutter pub get` failed version solving; pub itself
-  recommends 3.47.6 as the stable release carrying Dart 3.10.
+  recommends 3.47.6, which ships Dart 3.13.5.
+- Regenerated `pubspec.lock` under the pinned toolchain: Dart 3.13.5 moves `matcher`, `meta`, `path`
+  and `vector_math` to the versions Flutter 3.47.6 resolves, and the lock's Dart floor becomes
+  `>=3.11.0-0`. The `flutter.yml` lockfile-drift check now fails the build if the two diverge again.
 - Pinned Kotlin to `2.4.0` and AGP to `8.13.0` in `android/settings.gradle.kts`, and bumped the Gradle
   wrapper from 8.8 to 8.14. Flutter 3.47 refuses anything below AGP 8.11.1 and Gradle 8.14, and KGP
   2.1.x only documents support up to AGP 8.7.2 — so all three move together. The chosen set is the
