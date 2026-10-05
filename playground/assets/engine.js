@@ -221,6 +221,67 @@ export const BLOCKED_WORDS = new Set([
 ]);
 
 /* ------------------------------------------------------------------ *
+ * Intent reply banks — mirrors nlp/IntentReplyBanks.kt
+ * ------------------------------------------------------------------ */
+export const INTENT_BANKS = {
+  GREETING_CASUAL: [
+    "Hey! How are you?",
+    "Hi there!",
+    "Hello! What's up?"
+  ],
+  GREETING_PRO: [
+    "Good day, hope you are well.",
+    "Hello, how may I assist you?",
+    "Greetings."
+  ],
+  WELLBEING_CASUAL: [
+    "Doing great, thanks!",
+    "All good here! How about you?",
+    "Pretty good, you?"
+  ],
+  WELLBEING_PRO: [
+    "Doing well, thank you.",
+    "All is well on my end.",
+    "Fine, thank you for asking."
+  ],
+  GRATITUDE_CASUAL: [
+    "You're welcome!",
+    "Anytime! 😊",
+    "No problem at all!"
+  ],
+  GRATITUDE_PRO: [
+    "You are very welcome.",
+    "My pleasure to help.",
+    "Glad to be of assistance."
+  ],
+  SCHEDULE_CASUAL: [
+    "Can we do later?",
+    "Let's check tomorrow!",
+    "Works for me, see you then!"
+  ],
+  SCHEDULE_PRO: [
+    "I will check my calendar.",
+    "That time works for me.",
+    "I will send a calendar invite."
+  ],
+  QUESTION_CASUAL: [
+    "Let me check on that.",
+    "Not sure, I'll find out!",
+    "Yes, absolutely."
+  ],
+  QUESTION_PRO: [
+    "I will investigate and advise.",
+    "Understood, confirming details.",
+    "Yes, proceed as planned."
+  ]
+};
+
+const WELLBEING_PATTERN = /\b(how are you|how's it going|how are things|how do you do|how have you been|how's everything)\b/i;
+const GREETING_PATTERN = /\b(hello|hey|hi|good morning|good afternoon|good evening|what's up|sup)\b/i;
+const GRATITUDE_PATTERN = /\b(thank you|thanks|appreciate it|thx|cheers|much appreciated)\b/i;
+const SCHEDULE_PATTERN = /\b(meet|schedule|calendar|call|zoom|tomorrow|appointment|when are you free)\b/i;
+
+/* ------------------------------------------------------------------ *
  * Script + keyword detection — mirrors nlp/FallbackReplyEngine.kt
  * ------------------------------------------------------------------ */
 const ARABIC_REGEX = /[\u0600-\u06FF]/;
@@ -253,12 +314,13 @@ export function detectLocale(text) {
  *
  * Priority order is identical to the Kotlin implementation:
  *   1. user custom pills   2. late-night chrono bias   3. script detection
- *   4. Latin-script keyword match                     5. English default
+ *   4. Latin-script keyword match   5. forced tone   6. conversational intent
+ *   7. English default
  *
  * @param {object} input
  * @param {string} input.incomingText
  * @param {string[]} [input.userCustomPills]
- * @param {'casual'|'professional'} [input.tone]
+ * @param {'casual'|'professional'|string} [input.tone]
  * @param {boolean} [input.applyChronoBias]
  * @param {number} [input.hour] Wall-clock hour, injectable so tests stay deterministic.
  */
@@ -321,7 +383,41 @@ export function resolveFallback({
   if (HINGLISH_PATTERN.test(text)) return bank('HINDI_CASUAL', 'KeywordMatch:Hinglish');
   if (BANGLISH_PATTERN.test(text)) return bank('BANGLISH_CASUAL', 'KeywordMatch:Banglish');
 
-  // 5. English default.
+  // 5. Forced tone by language (matches Persona options in Flutter & Kotlin)
+  switch (tone) {
+    case 'spanish': return bank('SPANISH_CASUAL', 'ForcedTone:Spanish');
+    case 'german': return bank('GERMAN_CASUAL', 'ForcedTone:German');
+    case 'portuguese': return bank('PORTUGUESE_CASUAL', 'ForcedTone:Portuguese');
+    case 'french': return bank('FRENCH_CASUAL', 'ForcedTone:French');
+    case 'arabic': return bank('ARABIC_CASUAL', 'ForcedTone:Arabic');
+    case 'hindi': return bank('HINDI_CASUAL', 'ForcedTone:Hindi');
+    case 'bengali': return bank('BANGLISH_CASUAL', 'ForcedTone:Bengali');
+  }
+
+  // 6. Conversational intent detection (offline heuristics)
+  const isPro = tone === 'professional';
+  if (WELLBEING_PATTERN.test(text)) {
+    const bankKey = isPro ? 'WELLBEING_PRO' : 'WELLBEING_CASUAL';
+    return { pills: [...INTENT_BANKS[bankKey]], rule: `IntentMatch:${bankKey}`, bank: bankKey };
+  }
+  if (GREETING_PATTERN.test(text)) {
+    const bankKey = isPro ? 'GREETING_PRO' : 'GREETING_CASUAL';
+    return { pills: [...INTENT_BANKS[bankKey]], rule: `IntentMatch:${bankKey}`, bank: bankKey };
+  }
+  if (GRATITUDE_PATTERN.test(text)) {
+    const bankKey = isPro ? 'GRATITUDE_PRO' : 'GRATITUDE_CASUAL';
+    return { pills: [...INTENT_BANKS[bankKey]], rule: `IntentMatch:${bankKey}`, bank: bankKey };
+  }
+  if (SCHEDULE_PATTERN.test(text)) {
+    const bankKey = isPro ? 'SCHEDULE_PRO' : 'SCHEDULE_CASUAL';
+    return { pills: [...INTENT_BANKS[bankKey]], rule: `IntentMatch:${bankKey}`, bank: bankKey };
+  }
+  if (text.trim().endsWith('?')) {
+    const bankKey = isPro ? 'QUESTION_PRO' : 'QUESTION_CASUAL';
+    return { pills: [...INTENT_BANKS[bankKey]], rule: `IntentMatch:${bankKey}`, bank: bankKey };
+  }
+
+  // 7. English default.
   return tone === 'professional' ? bank('ENGLISH_PRO', 'Fallback:English:pro') : bank('ENGLISH_CASUAL', 'Fallback:English');
 }
 

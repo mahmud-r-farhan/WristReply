@@ -20,6 +20,12 @@ object FallbackReplyEngine {
     private val HINGLISH_PATTERN = Regex("(?i)\\b(kahan|kidhar|kaise|kya hal|raste|a raha|bhai|phone karo)\\b")
     private val BANGLISH_PATTERN = Regex("(?i)\\b(kothay|koi|kemon|aschis|hobe|ki obostha|call dao|astechi)\\b")
 
+    // Intent patterns inspired by smart-reply-ai
+    private val GREETING_PATTERN = Regex("(?i)\\b(hi|hello|hey|good morning|good afternoon|good evening|howdy|sup)\\b")
+    private val WELLBEING_PATTERN = Regex("(?i)\\b(how are you|how's it going|how are things|doing good|how r u|how do you do)\\b")
+    private val GRATITUDE_PATTERN = Regex("(?i)\\b(thank you|thanks|thx|appreciate it|grateful|much appreciated)\\b")
+    private val SCHEDULE_PATTERN = Regex("(?i)\\b(meet|schedule|call|sync|zoom|teams|calendar|appointment|time to chat|availability)\\b")
+
     fun resolveFallback(
         incomingText: String,
         userCustomPills: List<String> = emptyList(),
@@ -28,6 +34,8 @@ object FallbackReplyEngine {
     ): List<String> {
         // Priority 1: User custom overrides
         if (userCustomPills.isNotEmpty()) return userCustomPills.take(3)
+
+        val cleanTone = tone.lowercase()
 
         // Priority 2: Chrono late-night bias (23:00 - 06:00)
         if (applyChronoBias) {
@@ -51,21 +59,51 @@ object FallbackReplyEngine {
 
         // Priority 4: Dynamic keyword inspection for Latin-script languages
         if (SPANISH_PATTERN.containsMatchIn(incomingText)) {
-            return if (tone == "professional") LanguageReplyBanks.SPANISH_PRO else LanguageReplyBanks.SPANISH_CASUAL
+            return if (cleanTone == "professional") LanguageReplyBanks.SPANISH_PRO else LanguageReplyBanks.SPANISH_CASUAL
         }
         if (GERMAN_PATTERN.containsMatchIn(incomingText)) {
-            return if (tone == "professional") LanguageReplyBanks.GERMAN_PRO else LanguageReplyBanks.GERMAN_CASUAL
+            return if (cleanTone == "professional") LanguageReplyBanks.GERMAN_PRO else LanguageReplyBanks.GERMAN_CASUAL
         }
         if (PORTUGUESE_PATTERN.containsMatchIn(incomingText)) {
-            return if (tone == "professional") LanguageReplyBanks.PORTUGUESE_PRO else LanguageReplyBanks.PORTUGUESE_CASUAL
+            return if (cleanTone == "professional") LanguageReplyBanks.PORTUGUESE_PRO else LanguageReplyBanks.PORTUGUESE_CASUAL
         }
         if (FRENCH_PATTERN.containsMatchIn(incomingText)) {
-            return if (tone == "professional") LanguageReplyBanks.FRENCH_PRO else LanguageReplyBanks.FRENCH_CASUAL
+            return if (cleanTone == "professional") LanguageReplyBanks.FRENCH_PRO else LanguageReplyBanks.FRENCH_CASUAL
         }
         if (HINGLISH_PATTERN.containsMatchIn(incomingText)) return LanguageReplyBanks.HINDI_CASUAL
         if (BANGLISH_PATTERN.containsMatchIn(incomingText)) return LanguageReplyBanks.BANGLISH_CASUAL
 
-        // Priority 5: Fall back to English
-        return if (tone == "professional") LanguageReplyBanks.ENGLISH_PRO else LanguageReplyBanks.ENGLISH_CASUAL
+        // Priority 5: Forced language tone override (if configured in Persona)
+        when (cleanTone) {
+            "spanish" -> return LanguageReplyBanks.SPANISH_CASUAL
+            "german" -> return LanguageReplyBanks.GERMAN_CASUAL
+            "portuguese" -> return LanguageReplyBanks.PORTUGUESE_CASUAL
+            "french" -> return LanguageReplyBanks.FRENCH_CASUAL
+            "arabic" -> return LanguageReplyBanks.ARABIC_CASUAL
+            "hindi" -> return LanguageReplyBanks.HINDI_CASUAL
+            "bengali" -> return LanguageReplyBanks.BANGLISH_CASUAL
+        }
+
+        // Priority 6: Intent-based conversational replies (offline heuristics)
+        val isPro = cleanTone == "professional"
+        if (WELLBEING_PATTERN.containsMatchIn(incomingText)) {
+            return if (isPro) IntentReplyBanks.WELLBEING_PRO else IntentReplyBanks.WELLBEING_CASUAL
+        }
+        if (GREETING_PATTERN.containsMatchIn(incomingText)) {
+            return if (isPro) IntentReplyBanks.GREETING_PRO else IntentReplyBanks.GREETING_CASUAL
+        }
+        if (GRATITUDE_PATTERN.containsMatchIn(incomingText)) {
+            return if (isPro) IntentReplyBanks.GRATITUDE_PRO else IntentReplyBanks.GRATITUDE_CASUAL
+        }
+        if (SCHEDULE_PATTERN.containsMatchIn(incomingText)) {
+            return if (isPro) IntentReplyBanks.SCHEDULE_PRO else IntentReplyBanks.SCHEDULE_CASUAL
+        }
+        if (incomingText.trim().endsWith("?")) {
+            return if (isPro) IntentReplyBanks.QUESTION_PRO else IntentReplyBanks.QUESTION_CASUAL
+        }
+
+        // Priority 7: Fall back to English
+        return if (isPro) LanguageReplyBanks.ENGLISH_PRO else LanguageReplyBanks.ENGLISH_CASUAL
+
     }
 }

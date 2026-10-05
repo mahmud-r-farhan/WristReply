@@ -54,7 +54,8 @@ object MessageDebounceBuffer {
 
         debounceJobs[senderId]?.cancel()
 
-        debounceJobs[senderId] = scope.launch(Dispatchers.Default) {
+        var currentJob: Job? = null
+        currentJob = scope.launch(Dispatchers.Default) {
             try {
                 delay(DEBOUNCE_DELAY_MS)
                 val aggregatedText = synchronized(currentBuffer) {
@@ -65,9 +66,10 @@ object MessageDebounceBuffer {
                     onBatchReady(aggregatedText)
                 }
             } finally {
-                debounceJobs.remove(senderId)
+                currentJob?.let { debounceJobs.remove(senderId, it) }
             }
         }
+        debounceJobs[senderId] = currentJob
     }
 
     /** Drops any pending timer and buffered segments for [senderId]. */

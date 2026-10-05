@@ -39,12 +39,16 @@ object DynamicNotificationInspector {
         var targetAction: Notification.Action? = null
         var targetRemoteInput: RemoteInput? = null
 
-        notification.actions?.forEach { action ->
-            action.remoteInputs?.forEach { input ->
-                if (!input.resultKey.isNullOrEmpty() && action.actionIntent != null) {
-                    targetAction = action
-                    targetRemoteInput = input
-                    return@forEach
+        val actions = notification.actions
+        if (actions != null) {
+            outer@ for (action in actions) {
+                val inputs = action.remoteInputs ?: continue
+                for (input in inputs) {
+                    if (!input.resultKey.isNullOrEmpty() && action.actionIntent != null) {
+                        targetAction = action
+                        targetRemoteInput = input
+                        break@outer
+                    }
                 }
             }
         }

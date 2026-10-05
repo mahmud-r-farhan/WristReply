@@ -5,24 +5,26 @@
  * eight-stage pipeline, and mirrors the generated pills onto the phone and
  * watch mockups. No network access, no build step, no framework.
  */
-import { LANGUAGE_BANKS, runPipeline } from './engine.js';
+import { INTENT_BANKS, LANGUAGE_BANKS, createDebounceBuffer, runPipeline } from './engine.js';
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
 
 const PRESETS = [
-  { label: 'Banglish', text: 'Kemon acho bhai? Kothay tumi?' },
-  { label: 'বাংলা', text: 'কেমন আছো? কখন আসছো?' },
-  { label: 'Español', text: 'Hola amigo, ¿dónde estás?' },
-  { label: 'Deutsch', text: 'Hallo, wo bist du?' },
-  { label: 'العربية', text: 'وينك يا غالي؟ متى توصل؟' },
-  { label: 'हिन्दी', text: 'Bhai kahan ho? Phone karo' },
-  { label: 'Français', text: "Tu es où ? On se retrouve ?" },
-  { label: 'OTP', text: 'Your WristReply verification code: 849201. Valid for 5 min.' },
-  { label: 'bKash', text: 'You have received Tk 500.00. TrxID 9K34DAX891 at 29/09/2026.' },
-  { label: 'UPI', text: 'Paid Rs. 1500 to Merchant. UPI Ref: 329482718293.' },
-  { label: 'Abusive', text: 'you are an idiot, send money now' },
-  { label: 'Plain EN', text: 'Hey, are you free for a quick call right now?' },
+  { label: 'Banglish', text: 'Kemon acho bhai? Kothay tumi?', icon: 'fa-comment' },
+  { label: 'বাংলা', text: 'কেমন আছো? কখন আসছো?', icon: 'fa-globe' },
+  { label: 'Español', text: 'Hola amigo, ¿dónde estás?', icon: 'fa-globe' },
+  { label: 'Deutsch', text: 'Hallo, wo bist du?', icon: 'fa-globe' },
+  { label: 'العربية', text: 'وينك يا غالي؟ متى توصل؟', icon: 'fa-globe' },
+  { label: 'हिन्दी', text: 'Bhai kahan ho? Phone karo', icon: 'fa-globe' },
+  { label: 'Français', text: 'Tu es où ? On se retrouve ?', icon: 'fa-globe' },
+  { label: 'OTP Code', text: 'Your WristReply verification code: 849201. Valid for 5 min.', icon: 'fa-shield-halved' },
+  { label: 'bKash Trx', text: 'You have received Tk 500.00. TrxID 9K34DAX891 at 29/09/2026.', icon: 'fa-money-bill-wave' },
+  { label: 'UPI Ref', text: 'Paid Rs. 1500 to Merchant. UPI Ref: 329482718293.', icon: 'fa-receipt' },
+  { label: 'Abusive Filter', text: 'you are an idiot, send money now', icon: 'fa-triangle-exclamation' },
+  { label: 'Meeting Intent', text: 'Can we schedule a quick call tomorrow morning?', icon: 'fa-calendar' },
+  { label: 'Well-being', text: 'Hey, how have you been doing lately?', icon: 'fa-handshake' },
+  { label: 'Gratitude', text: 'Thank you so much for the assistance today!', icon: 'fa-heart' },
 ];
 
 const STAGES = [
@@ -32,6 +34,7 @@ const STAGES = [
 const state = {
   watchShape: 'round',
   lastPills: [],
+  burstActive: false,
 };
 
 const els = {
@@ -46,12 +49,20 @@ const els = {
   chrono: $('#toggle-chrono'),
   shield: $('#toggle-shield'),
   location: $('#toggle-location'),
+  toggleCustomPills: $('#toggle-custom-pills'),
+  customPillsInput: $('#custom-pills-input'),
+  btnBurst: $('#btn-burst'),
+  burstIndicator: $('#burst-indicator'),
+  btnShareScenario: $('#btn-share-scenario'),
+  btnClearLog: $('#btn-clear-log'),
+  toastNotice: $('#toast-notice'),
   strip: $('#pipeline-strip'),
   log: $('#device-log'),
   phoneSender: $('#phone-sender'),
   phoneText: $('#phone-text'),
   phonePills: $('#phone-pills'),
   phoneToken: $('#phone-token'),
+  phoneCompanion: $('#phone-companion'),
   phoneSub: $('#phone-wr-sub'),
   watchSender: $('#watch-sender'),
   watchMsg: $('#watch-msg'),
@@ -59,6 +70,9 @@ const els = {
   watchSent: $('#watch-sent'),
   watch: $('#watch'),
   dispatch: $('#dispatch-line'),
+  engineBadge: $('#engine-badge'),
+  cdnStatus: $('#cdn-status'),
+  languageTable: $('#language-table'),
   metrics: {
     latency: $('#m-latency'),
     locale: $('#m-locale'),
@@ -68,7 +82,21 @@ const els = {
 };
 
 /* ---------------------------------------------------------------- *
- * Presets
+ * Toast notification
+ * ---------------------------------------------------------------- */
+let toastTimer = null;
+function showToast(message) {
+  const textEl = $('#toast-text') || els.toastNotice;
+  textEl.textContent = message;
+  els.toastNotice.classList.add('is-active-toast');
+  window.clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(() => {
+    els.toastNotice.classList.remove('is-active-toast');
+  }, 2400);
+}
+
+/* ---------------------------------------------------------------- *
+ * Presets rendering
  * ---------------------------------------------------------------- */
 function renderPresets() {
   els.presets.replaceChildren(
@@ -76,11 +104,14 @@ function renderPresets() {
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'wr-preset';
-      button.textContent = preset.label;
+      button.innerHTML = `<i class="fa-solid ${preset.icon} text-[10px] text-mint"></i><span>${preset.label}</span>`;
       button.addEventListener('click', () => {
+        $$('.wr-preset').forEach((b) => b.classList.remove('is-active-preset'));
+        button.classList.add('is-active-preset');
         els.input.value = preset.text;
         run();
         els.input.focus({ preventScroll: true });
+        showToast(`Loaded preset: ${preset.label}`);
       });
       return button;
     }),
@@ -96,7 +127,7 @@ function renderStrip() {
       const cell = document.createElement('div');
       cell.className = 'wr-stage-cell';
       cell.dataset.stage = stage;
-      cell.innerHTML = `<span class="wr-stage-dot"></span><span>${stage}</span>`;
+      cell.innerHTML = `<span class="wr-stage-dot"></span><span class="truncate">${stage}</span>`;
       return cell;
     }),
   );
@@ -118,7 +149,7 @@ function log(line, kind = 'info') {
   const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
   row.textContent = `${time}  ${line}`;
   els.log.prepend(row);
-  while (els.log.childElementCount > 60) els.log.lastElementChild.remove();
+  while (els.log.childElementCount > 80) els.log.lastElementChild.remove();
 }
 
 /* ---------------------------------------------------------------- *
@@ -143,7 +174,7 @@ function renderPills(pills) {
   if (pills.length === 0) {
     const empty = document.createElement('p');
     empty.className = 'wr-empty';
-    empty.textContent = 'No pills — the shield stopped this one.';
+    empty.textContent = 'No pills — content filter active.';
     els.phonePills.append(empty);
     els.watchPills.append(empty.cloneNode(true));
   }
@@ -167,10 +198,26 @@ function dispatch(pill) {
   els.watchSent.textContent = `Sent ✓ ${truncate(pill, 16)}`;
   els.watch.classList.add('is-sending');
   els.watchSent.classList.add('is-visible');
-  els.dispatch.textContent = `RemoteInput.addResultsToIntent("${pill}") → PendingIntent.send() · notification cancelled`;
+
+  // Trigger celebration confetti if canvas-confetti is loaded
+  if (typeof window.confetti === 'function') {
+    try {
+      window.confetti({
+        particleCount: 26,
+        spread: 60,
+        origin: { y: 0.72 },
+        colors: ['#38ef7d', '#00f2fe', '#ffffff'],
+      });
+    } catch {
+      // Confetti fallback
+    }
+  }
+
+  els.dispatch.textContent = `RemoteInput.addResultsToIntent("${pill}") → PendingIntent.send() · notification shade dismissed`;
   els.dispatch.classList.remove('text-muted');
   els.dispatch.classList.add('text-mint');
   log(`dispatch → "${pill}" attached to RemoteInput`, 'ok');
+  showToast(`Dispatched reply: "${truncate(pill, 20)}"`);
 
   window.setTimeout(() => {
     els.watch.classList.remove('is-sending');
@@ -179,6 +226,37 @@ function dispatch(pill) {
     els.dispatch.classList.remove('text-mint');
   }, 2200);
   void watchClass;
+}
+
+/* ---------------------------------------------------------------- *
+ * Rapid burst debounce simulation
+ * ---------------------------------------------------------------- */
+function simulateBurst() {
+  if (state.burstActive) return;
+  state.burstActive = true;
+  els.burstIndicator.classList.add('is-active-burst');
+  log('⚡ Starting Rapid 3-Message Burst Simulation...', 'ok');
+
+  const burstBuffer = createDebounceBuffer(1500);
+  const burstMessages = [
+    'Hey Rifat!',
+    'Are you free right now?',
+    'Can we do a quick call about the project?',
+  ];
+
+  burstMessages.forEach((msg, idx) => {
+    window.setTimeout(() => {
+      log(`[Burst incoming ${idx + 1}/3] "${msg}"`, 'dim');
+      burstBuffer.enqueue('Alice', msg, (combined) => {
+        state.burstActive = false;
+        els.burstIndicator.classList.remove('is-active-burst');
+        els.input.value = combined;
+        run();
+        log(`✓ MessageDebounceBuffer aggregated burst → "${combined}"`, 'ok');
+        showToast('Burst aggregated into single prompt!');
+      });
+    }, idx * 360);
+  });
 }
 
 /* ---------------------------------------------------------------- *
@@ -196,7 +274,7 @@ const LANGUAGE_ROWS = [
 ];
 
 function renderLanguageTable() {
-  const body = $('#language-table');
+  const body = els.languageTable;
   body.replaceChildren(
     ...LANGUAGE_ROWS.map(([market, trigger, casual, lateNight]) => {
       const row = document.createElement('tr');
@@ -215,6 +293,10 @@ function renderLanguageTable() {
  * ---------------------------------------------------------------- */
 function run() {
   const text = els.input.value;
+  const customPills = (els.toggleCustomPills && els.toggleCustomPills.checked && els.customPillsInput)
+    ? els.customPillsInput.value.split(',').map((s) => s.trim()).filter(Boolean)
+    : [];
+
   const options = {
     localeOverride: els.locale.value,
     tone: els.tone.value,
@@ -224,6 +306,7 @@ function run() {
     applyChronoBias: els.chrono.checked,
     shieldEnabled: els.shield.checked,
     locationPinEnabled: els.location.checked,
+    customPills,
   };
 
   const result = runPipeline({ text, options });
@@ -235,11 +318,25 @@ function run() {
     ? 'Abusive content blocked — no auto-reply generated'
     : 'Quick replies generated on-device';
 
+  const tokenTextEl = $('#phone-token-text');
   if (result.token) {
     els.phoneToken.classList.remove('hidden');
-    els.phoneToken.textContent = `📋 Copied ${result.token.type.replace('_', ' ').toLowerCase()}: ${result.token.value}`;
+    const label = `${result.token.type.replace('_', ' ')}: ${result.token.value}`;
+    if (tokenTextEl) {
+      tokenTextEl.textContent = label;
+    } else {
+      els.phoneToken.textContent = label;
+    }
+    els.phoneToken.onclick = () => {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(result.token.value);
+        showToast(`Copied ${result.token.value} to clipboard!`);
+        log(`Clipboard copy → ${result.token.value}`, 'ok');
+      }
+    };
   } else {
     els.phoneToken.classList.add('hidden');
+    els.phoneToken.onclick = null;
   }
 
   els.watchSender.textContent = 'Rifat';
@@ -257,7 +354,7 @@ function run() {
   STAGES.forEach((stage) => setStage(stage, 'skip'));
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   result.trace.forEach((step, index) => {
-    const delay = reduced ? 0 : index * 70;
+    const delay = reduced ? 0 : index * 60;
     window.setTimeout(() => {
       setStage(step.stage, step.status);
       log(`[${step.stage}] ${step.detail}`, step.status === 'blocked' ? 'bad' : step.status === 'ok' ? 'ok' : 'dim');
@@ -272,16 +369,53 @@ function scheduleRun() {
 }
 
 /* ---------------------------------------------------------------- *
+ * Scenario URL Sharing
+ * ---------------------------------------------------------------- */
+function shareScenario() {
+  const text = encodeURIComponent(els.input.value);
+  const tone = encodeURIComponent(els.tone.value);
+  const url = `${window.location.origin}${window.location.pathname}#text=${text}&tone=${tone}`;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url);
+    showToast('Simulation link copied to clipboard!');
+  }
+}
+
+function restoreScenarioFromHash() {
+  const hash = window.location.hash.slice(1);
+  if (!hash) return;
+  const params = new URLSearchParams(hash);
+  if (params.has('text')) {
+    els.input.value = decodeURIComponent(params.get('text'));
+  }
+  if (params.has('tone') && els.tone) {
+    els.tone.value = decodeURIComponent(params.get('tone'));
+  }
+}
+
+/* ---------------------------------------------------------------- *
  * Boot
  * ---------------------------------------------------------------- */
 function bind() {
   els.input.addEventListener('input', scheduleRun);
-  [els.locale, els.tone, els.meeting].forEach((el) => el.addEventListener('change', run));
-  [els.driving, els.chrono, els.shield, els.location].forEach((el) => el.addEventListener('change', run));
+  [els.locale, els.tone, els.meeting].forEach((el) => el && el.addEventListener('change', run));
+  [els.driving, els.chrono, els.shield, els.location].forEach((el) => el && el.addEventListener('change', run));
+  if (els.toggleCustomPills) els.toggleCustomPills.addEventListener('change', run);
+  if (els.customPillsInput) els.customPillsInput.addEventListener('input', scheduleRun);
+
   els.pillsRange.addEventListener('input', () => {
     els.pillsOutput.textContent = els.pillsRange.value;
     run();
   });
+
+  if (els.btnBurst) els.btnBurst.addEventListener('click', simulateBurst);
+  if (els.btnShareScenario) els.btnShareScenario.addEventListener('click', shareScenario);
+  if (els.btnClearLog) {
+    els.btnClearLog.addEventListener('click', () => {
+      els.log.replaceChildren();
+      log('logcat cleared', 'dim');
+    });
+  }
 
   $$('[data-watch]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -290,6 +424,7 @@ function bind() {
       state.watchShape = button.dataset.watch;
       els.watch.classList.toggle('watch-frame--round', state.watchShape === 'round');
       els.watch.classList.toggle('watch-frame--square', state.watchShape === 'square');
+      showToast(`Switched to ${state.watchShape} form-factor`);
     });
   });
 }
@@ -297,8 +432,7 @@ function bind() {
 function reportCdn() {
   const tailwind = document.documentElement.classList.contains('tw-ready');
   const aos = typeof window.AOS !== 'undefined';
-  const el = $('#cdn-status');
-  el.textContent = `Tailwind CDN ${tailwind ? 'loaded' : 'unavailable (fallback CSS active)'} · AOS ${aos ? 'loaded' : 'unavailable (animations off)'}`;
+  els.cdnStatus.textContent = `Tailwind CDN ${tailwind ? 'loaded' : 'unavailable (fallback CSS active)'} · AOS ${aos ? 'loaded' : 'unavailable (animations off)'}`;
 }
 
 function initAos() {
@@ -311,7 +445,8 @@ renderPresets();
 renderStrip();
 renderLanguageTable();
 bind();
+restoreScenarioFromHash();
 run();
 initAos();
 reportCdn();
-log('engine ready · 24 reply banks · 68 blocked tokens · 0 network calls', 'ok');
+log(`engine ready · 24 reply banks · ${Object.keys(INTENT_BANKS).length} intent banks · 68 blocked tokens · 0 network calls`, 'ok');

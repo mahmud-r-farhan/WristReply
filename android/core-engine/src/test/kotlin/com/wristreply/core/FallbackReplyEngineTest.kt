@@ -100,4 +100,47 @@ class FallbackReplyEngineTest {
         )
         assertEquals(LanguageReplyBanks.SPANISH_CASUAL, daytime)
     }
+
+    @Test
+    fun `greeting intent triggers greeting replies`() {
+        val casual = FallbackReplyEngine.resolveFallback("Hey there!", applyChronoBias = false)
+        assertEquals(com.wristreply.core.nlp.IntentReplyBanks.GREETING_CASUAL, casual)
+
+        val pro = FallbackReplyEngine.resolveFallback("Good morning team", tone = "professional", applyChronoBias = false)
+        assertEquals(com.wristreply.core.nlp.IntentReplyBanks.GREETING_PRO, pro)
+    }
+
+    @Test
+    fun `well-being intent triggers wellbeing replies`() {
+        val casual = FallbackReplyEngine.resolveFallback("How are you doing today?", applyChronoBias = false)
+        assertEquals(com.wristreply.core.nlp.IntentReplyBanks.WELLBEING_CASUAL, casual)
+    }
+
+    @Test
+    fun `gratitude intent triggers gratitude replies`() {
+        val casual = FallbackReplyEngine.resolveFallback("Thank you so much!", applyChronoBias = false)
+        assertEquals(com.wristreply.core.nlp.IntentReplyBanks.GRATITUDE_CASUAL, casual)
+    }
+
+    @Test
+    fun `schedule intent triggers schedule replies`() {
+        val casual = FallbackReplyEngine.resolveFallback("Can we schedule a call later?", applyChronoBias = false)
+        assertEquals(com.wristreply.core.nlp.IntentReplyBanks.SCHEDULE_CASUAL, casual)
+    }
+
+    @Test
+    fun `question mark triggers question replies`() {
+        val casual = FallbackReplyEngine.resolveFallback("Are you ready for the deployment?", applyChronoBias = false)
+        assertEquals(com.wristreply.core.nlp.IntentReplyBanks.QUESTION_CASUAL, casual)
+    }
+
+    @Test
+    fun `forced language tone override triggers corresponding bank`() {
+        val spanish = FallbackReplyEngine.resolveFallback("Some neutral message", tone = "spanish", applyChronoBias = false)
+        assertEquals(LanguageReplyBanks.SPANISH_CASUAL, spanish)
+
+        val german = FallbackReplyEngine.resolveFallback("Some neutral message", tone = "german", applyChronoBias = false)
+        assertEquals(LanguageReplyBanks.GERMAN_CASUAL, german)
+    }
 }
+
