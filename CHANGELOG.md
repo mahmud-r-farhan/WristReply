@@ -5,46 +5,101 @@ All notable changes to WristReply AI are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased] — 2026-10-05
+## [0.2.0] — 2026-10-05
 
 ### Added
-- Apache 2.0 LICENSE file at the repository root.
-- `.editorconfig` enforcing LF line endings, UTF-8, 4-space indent (2-space for Dart/YAML).
-- `CONTRIBUTING.md` with full engineering etiquette and Conventional Commits policy.
-- GitHub Actions workflow `.github/workflows/ci.yml` — Flutter analyze + test + core-engine JUnit on PR.
-- GitHub Actions workflow `.github/workflows/release.yml` — builds signed Android App Bundle and publishes a GitHub Release with the standalone `core-engine` AAR.
-- GitHub Actions workflow `.github/workflows/docs.yml` — lints Markdown and deploys the playground site to GitHub Pages.
-- `playground/` Flutter Web project showcasing live reply pills, language detection and locale routing, ready for one-click GitHub Pages deployment.
-- Dart unit tests under `test/` (engine contract, native channel mocks, fallback banks).
-- Kotlin unit tests under `android/core-engine/src/test/` for `NotificationGate`, `ProfanityGuardEngine`, `SmartTokenExtractor`, `ReadActionResolver`, `FallbackReplyEngine`, `LocationPillResolver`, `MetricsLedger`, `SleepWindowGate`.
-- `CODE_OF_CONDUCT.md` (Contributor Covenant v2.1).
-- `SECURITY.md` describing the zero-cloud security policy and responsible disclosure.
-- New `core-engine` public API surface: `EngineBootstrap` so external apps can install/start the headless daemon in 5 lines of Kotlin.
-- Robust `mounted` guards in Flutter state classes (`PermissionScreen`, `GeneralSettingsScreen`, `LiveSandboxWidget`).
-- `LocationProviderHelper` now resolves both `[📍…]` and bare `📍` pill prefixes.
-- Kotlin coroutine cancellation propagation inside `MessageDebounceBuffer`.
+
+- **Static web playground** at `playground/index.html` — a zero-build, zero-dependency page that runs the
+  reply engine in the browser, with a phone mockup and both round and square smartwatch mockups. Styling
+  uses Tailwind CSS from the official CDN and animations use AOS from cdnjs, with a bundled fallback
+  stylesheet so the page still renders when a CDN is blocked.
+- `playground/assets/engine.js` — a JavaScript port of the Kotlin engine: fallback banks, locale
+  detection, `RemoteInput` scanning, profanity guard, token extraction, contextual enhancers,
+  debounce buffer, and the full eight-stage `runPipeline`.
+- `playground/test/engine.test.mjs` — 41 `node:test` assertions that mirror the Kotlin JUnit suite,
+  including per-locale fallback expectations, token formats and debounce timing (41/41 passing).
+- `playground/test/markup.test.mjs` — verifies the page wiring: every `getElementById` target exists,
+  every navigation anchor resolves to a section, CDN references are present, local assets resolve, and
+  the app only imports symbols the engine actually exports.
+- `.markdownlint-cli2.jsonc` — markdownlint-cli2 does not read `.markdownlint.json`, so the CI Markdown
+  job had been linting with stock defaults; the new config points cli2 at the shared rule set and scopes
+  the glob list.
+- GitHub Actions workflow `.github/workflows/flutter.yml` — `flutter analyze`, `flutter test` with
+  coverage, `pubspec.lock` drift check and the playground `node --test` suites.
+- GitHub Actions workflow `.github/workflows/android.yml` — `flutter build apk` (debug and release),
+  `flutter build appbundle`, `:core-engine:testDebugUnitTest` and `:core-engine:assembleRelease` with
+  Gradle caching, JUnit report and AAR uploaded as artifacts.
+- GitHub Actions workflow `.github/workflows/docs.yml` — Markdown lint on documentation changes.
+- `lifecycle-runtime-ktx:2.8.7` in `android/app/build.gradle.kts` so `MainActivity`'s `lifecycleScope`
+  extension resolves on modern AGP.
+- `FLUTTER_ROOT` fallback in `android/settings.gradle.kts` so Gradle can configure when
+  `android/local.properties` has not been generated yet.
 
 ### Changed
-- Bumped Dart SDK constraint to `^3.5.0` and aligned `pubspec.yaml` dependencies with current versions.
-- Set `flutter_lints` to `^5.0.0` (compatible with Dart 3.5 used by the GitHub Actions runner).
-- Updated `analysis_options.yaml` with stricter rule set (prefer_single_quotes, require_trailing_commas, avoid_relative_lib_imports).
-- `NotificationPublisher.publishPills` no longer silently drops to a 3-pill cap — now respects the user-selected `pillsPerMessage` (default 3, max 5).
-- `MessageDebounceBuffer` debounce window tuned to 1.5 s for snappier UX on rapid-fire chats.
-- `LocationProviderHelper.resolveDispatchText` handles missing location gracefully without crashing receivers.
-- Added `.markdownlint.json` so the CI Markdown lint job enforces our existing style instead of the strict defaults.
-- Added Gradle wrapper (`android/gradlew`, `android/gradlew.bat`, `android/gradle/wrapper/gradle-wrapper.jar`) so `./gradlew :core-engine:testDebugUnitTest` works in CI.
+
+- Removed `.github/workflows/playground.yml` (the GitHub Pages deployment of a Flutter Web playground).
+  The playground is now a static page, so there is nothing to compile or deploy.
+- Removed `.github/workflows/ci.yml` and split its responsibilities across the three focused workflows
+  above. Its `markdown-lint` job passed `ignores` as a YAML sequence where the action requires a scalar
+  string, which made the workflow file invalid and failed every run with zero jobs.
+- Replaced the `playground/` Flutter Web project (28 files) with the static site described above.
+- Bumped `pubspec.yaml` to `0.2.0+2`, Dart SDK constraint to `^3.10.0` and minimum Flutter to `>=3.38.0`,
+  matching `pubspec.lock` (`shared_preferences 2.5.5`) and the CI toolchain.
+- Pinned Kotlin to `2.1.0` in `android/settings.gradle.kts`. `compilerOptions { jvmTarget }` in
+  `build.gradle.kts` requires the Kotlin Gradle Plugin 2.0 or newer.
+- Dropped the `kotlin("plugin.serialization")` plugin from `android/core-engine/build.gradle.kts`. It was
+  pinned at 2.3.20 while the Android plugin was 1.9.24 (a Kotlin Gradle Plugin version split that fails
+  configuration), and the module contains no `@Serializable` type.
+- Replaced `androidx.collection.LruCache` in `SmartReplyLruCache` with a pure-JVM linked-hash LRU.
+  `LruCache` is an Android framework class that no-ops under `unitTests.isReturnDefaultValues = true`,
+  which silently disabled the cache in unit tests.
+- `test/widget_test.dart` rewritten as two deterministic tests driven by a mocked `MethodChannel`. The
+  previous version pumped `WristReplyApp()` twice under the same widget tree, so the second pump found
+  the `CircularProgressIndicator` still on screen and the golden colour assertions failed.
+- `analysis_options.yaml` expanded: strict casts, strict raw types, `unused_import` promoted to error,
+  generated code excluded, plus a curated rule set (`prefer_single_quotes`, `close_sinks`,
+  `cancel_subscriptions`, `hash_and_equals`, `use_full_hex_values_for_flutter_colors`, …).
+- Every documentation file reflowed and refreshed for the 0.2.0 layout; 54 tracked files that were
+  missing a final newline now end with one.
 
 ### Fixed
-- `general_settings_screen.dart` no longer calls `setState` after `await` without mounted guard.
-- `permission_screen.dart` async action handler now awaits properly and guards the navigator.
-- `OemKeepAliveManager` no longer crashes if a manufacturer component is uninstalled.
-- `ActionBroadcastReceiver` correctly resolves `RemoteInput.SOURCE_FREE_FORM_INPUT` on API 28+ and falls back cleanly on lower API levels.
-- `NotificationProcessorService` now flushes its `MessageDebounceBuffer` for the sender before publishing to prevent duplicate pills.
-- Removed unsafe double `kotlinx.coroutines` dispatch path in `SmartReplyResolver`.
 
-### Removed
-- Dead `MaterialState` references (Flutter 3.27 migration to `WidgetState`).
+- `android/settings.gradle.kts` no longer throws when `android/local.properties` is absent. It used to
+  fail the whole configuration phase, which is why the Core-Engine CI job exited with code 127.
+- `FallbackReplyEngineTest` no longer depends on wall-clock time: the chrono bias is disabled
+  explicitly, so the "Hello there how are you today" expectations hold at every hour.
+- `MetricsLedgerTest` expectations corrected to the real ledger contract — average latency is `75L` for
+  a 120/90/60 sample set, `0L` when no samples exist, and `getMetrics()` reports the `18L` idle default
+  after a reset.
+- `ProfanityGuardEngineTest` now asserts against a token that is actually in `DefaultBlockedWords`
+  (`idiot`); `stupid` and `dumb` are not in the dictionary, so both expectations could never pass.
+- `NotificationGateTest` rewritten with Mockito against a real `Bundle` instance instead of expecting a
+  `null` bundle to return flags — `NotificationGate.extrasToMap` reads the bundle and would NPE.
+- `SmartReplyLruCacheTest` passes again (see the LRU replacement above).
+- `live_sandbox_widget.dart` guards `mounted` inside its `addPostFrameCallback`, so the initial pill
+  generation cannot call `setState` on a disposed state.
+- `app_theme.dart` uses `const` for the fully-constant `SliderThemeData` and `AppColors` references.
+- `native_channel.dart` KDoc no longer documents a `getMetrics()` method that the bridge does not
+  expose; it references `getEngineMetrics()`.
+- `.github/workflows/release.yml` used `${${{ github.event.inputs.tag }}#v}`, which bash expands to
+  `${v0.2.0#v}` and rejects with "bad substitution". Tag stripping now happens in a real shell variable.
+- Release workflow no longer swallows build failures with `continue-on-error`, and now uploads the AAB
+  and APKs alongside the AAR.
+- `android/core-engine/README.md` badge links pointed at `README.md` and `LICENSE` inside the module
+  directory; they now resolve to the repository root files.
+- `assets/onboarding/why_offline.md` link to `engineering.md` corrected to the repository-root path.
 
-## [0.1.0] — 2026-09-30
+## [0.1.0] — 2026-10-04
 
-Initial public release containing the headless Kotlin engine (`android/core-engine`) and the Flutter OLED dark cockpit (`lib/`).
+### Added
+
+- Initial public release of the headless `:core-engine` Kotlin module with `NotificationProcessorService`,
+  `NotificationGate`, `ProfanityGuardEngine`, `SmartTokenExtractor`, `EphemeralMLKitEngine`,
+  `FallbackReplyEngine`, `ContextualReplyEnhancer`, `NotificationPublisher` and `WearSyncService`.
+- Flutter cockpit with onboarding, dashboard, whitelist, persona and filters features.
+- Apache 2.0 `LICENSE`, `CODE_OF_CONDUCT.md`, `SECURITY.md` and `CONTRIBUTING.md`.
+- Gradle wrapper (`android/gradlew`, `android/gradle/wrapper/gradle-wrapper.jar`).
+- `.editorconfig`, `.markdownlint.json` and the initial GitHub Actions release workflow.
+
+[0.2.0]: https://github.com/mahmud-r-farhan/WristReply/releases/tag/v0.2.0
+[0.1.0]: https://github.com/mahmud-r-farhan/WristReply/releases/tag/v0.1.0
