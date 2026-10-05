@@ -1,5 +1,8 @@
 plugins {
     id("com.android.library")
+    // Required to compile the module's Kotlin sources and to configure the
+    // compiler through `kotlin { compilerOptions { ... } }` below.
+    id("kotlin-android")
     `maven-publish`
 }
 

@@ -17,7 +17,7 @@ permissions:
 
 env:
   # Kept in sync with pubspec.yaml (environment) and pubspec.lock (sdks).
-  FLUTTER_VERSION: '3.38.0'
+  FLUTTER_VERSION: '3.47.6'
   JAVA_VERSION: '17'
 
 jobs:

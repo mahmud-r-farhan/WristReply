@@ -12,7 +12,7 @@
 #   * require_trailing_commas / always_declare_return_types — pure formatting
 #     churn; `dart format` is the tool for that, not CI.
 #
-# Compatible with flutter_lints ^5.x (Dart SDK 3.10+ / Flutter 3.38+).
+# Compatible with flutter_lints ^5.x (Dart SDK 3.10+ / Flutter 3.47+).
 
 include: package:flutter_lints/flutter.yaml
 

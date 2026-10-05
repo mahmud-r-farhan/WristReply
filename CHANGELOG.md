@@ -44,7 +44,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   string, which made the workflow file invalid and failed every run with zero jobs.
 - Replaced the `playground/` Flutter Web project (28 files) with the static site described above.
 - Bumped `pubspec.yaml` to `0.2.0+2`, Dart SDK constraint to `^3.10.0` and minimum Flutter to `>=3.38.0`,
-  matching `pubspec.lock` (`shared_preferences 2.5.5`) and the CI toolchain.
+  matching `pubspec.lock` (`shared_preferences 2.5.5`).
+- CI pins Flutter **3.47.6** rather than 3.38.0. Flutter 3.38.0 ships Dart `3.10.0-290.4.beta`, and a
+  pre-release does not satisfy `sdk: ^3.10.0`, so `flutter pub get` failed version solving; pub itself
+  recommends 3.47.6 as the stable release carrying Dart 3.10.
 - Pinned Kotlin to `2.1.0` in `android/settings.gradle.kts`. `compilerOptions { jvmTarget }` in
   `build.gradle.kts` requires the Kotlin Gradle Plugin 2.0 or newer.
 - Dropped the `kotlin("plugin.serialization")` plugin from `android/core-engine/build.gradle.kts`. It was
@@ -64,6 +67,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Neither Android module applied the Kotlin Gradle plugin.** `:app` and `:core-engine` both configure
+  the compiler through `kotlin { jvmToolchain(17); compilerOptions { … } }`, but their `plugins {}`
+  blocks only applied `com.android.application` / `com.android.library`, so Gradle failed configuration
+  with `Unresolved reference: jvmToolchain / compilerOptions / jvmTarget`. `id("kotlin-android")` is now
+  applied in both (before `dev.flutter.flutter-gradle-plugin` in `:app`, as that plugin requires). This
+  was invisible until `settings.gradle.kts` stopped throwing first.
 - `android/settings.gradle.kts` no longer throws when `android/local.properties` is absent. It used to
   fail the whole configuration phase, which is why the Core-Engine CI job exited with code 127.
 - `FallbackReplyEngineTest` no longer depends on wall-clock time: the chrono bias is disabled

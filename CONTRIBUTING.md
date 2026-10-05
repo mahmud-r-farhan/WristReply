@@ -21,7 +21,7 @@ through a `MethodChannel`.
 
 | Component | Version | Where it is pinned |
 | --- | --- | --- |
-| Flutter | 3.38 | `pubspec.yaml`, `.github/workflows/*.yml` |
+| Flutter | 3.47.6 | `.github/workflows/*.yml` (minimum 3.38 in `pubspec.yaml`) |
 | Dart SDK | 3.10 | `pubspec.yaml` (`sdk: ^3.10.0`) |
 | Kotlin | 2.1.0 | `android/settings.gradle.kts` |
 | AGP | 8.5.2 | `android/settings.gradle.kts` |
@@ -84,7 +84,7 @@ through a `MethodChannel`.
 ## Setting up locally
 
 ```bash
-# 1. Install Flutter 3.38 (see the toolchain table above)
+# 1. Install Flutter 3.47.6 (see the toolchain table above)
 
 # 2. Install dependencies and generate android/local.properties
 flutter pub get

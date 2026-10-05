@@ -3,6 +3,10 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
+    // Required by the `kotlin { compilerOptions { ... } }` block below and by the
+    // module's .kt sources. Without it Gradle fails configuration with
+    // "Unresolved reference: jvmToolchain / compilerOptions / jvmTarget".
+    id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
