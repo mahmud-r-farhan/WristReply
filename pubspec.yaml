@@ -5,11 +5,13 @@ description: >
   pills directly onto notifications and mirrors them to Wear OS, Zepp OS,
   and budget RTOS smartwatches.
 publish_to: 'none'
-version: 0.1.0+1
+version: 0.2.0+2
 
+# The pinned toolchain (see .github/workflows/*) is Flutter 3.38 / Dart 3.10,
+# which is also what pubspec.lock was resolved with. Keep these in sync.
 environment:
-  sdk: ^3.5.0
-  flutter: ">=3.24.0"
+  sdk: ^3.10.0
+  flutter: ">=3.38.0"
 
 dependencies:
   flutter:

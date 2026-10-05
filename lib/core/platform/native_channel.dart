@@ -158,13 +158,13 @@ class NativeChannel {
     } catch (_) {}
   }
 
-  /// Generates smart replies for the supplied message text. Used by both the
-  /// dashboard sandbox and the GitHub Pages playground.
+  /// Generates smart replies for the supplied message text. Backs the live
+  /// sandbox on the dashboard.
   ///
-  /// On non-Android platforms (Flutter Web playground) the engine isn't
-  /// available — we fall back to an offline locale-detection routine that
-  /// mirrors the Kotlin [FallbackReplyEngine] contract so the playground
-  /// still demonstrates the same reply behavior.
+  /// On non-Android platforms the engine isn't available — we fall back to an
+  /// offline locale-detection routine that mirrors the contract of the Kotlin
+  /// `FallbackReplyEngine` (android/core-engine/nlp) so the live sandbox in the
+  /// cockpit still demonstrates the same reply behaviour.
   static Future<List<String>> simulateSmartReply(String messageText) async {
     try {
       final res = await _channel.invokeListMethod<String>('simulateSmartReply', <String, Object?>{

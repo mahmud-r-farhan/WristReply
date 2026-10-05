@@ -4,11 +4,11 @@ import '../constants/app_colors.dart';
 /// App-wide theme definition implementing the OLED Dark Utility aesthetic.
 ///
 /// All color, typography, and component themes are centralized here so any
-/// future "light" mode can be added by simply mirroring this surface.
+/// future light mode can be added by simply mirroring this surface.
 class AppTheme {
   AppTheme._();
 
-  static const TextTheme _textTheme = const TextTheme(
+  static const TextTheme _textTheme = TextTheme(
     displayLarge: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w800, letterSpacing: -1),
     headlineLarge: TextStyle(color: AppColors.textPrimary, fontSize: 28, fontWeight: FontWeight.bold, letterSpacing: -0.5),
     headlineMedium: TextStyle(color: AppColors.textPrimary, fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: -0.5),
