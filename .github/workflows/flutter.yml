@@ -1,0 +1,112 @@
+name: Flutter
+
+# Verifies the Dart/Flutter presentation layer (lib/) and the static playground.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Kept in sync with pubspec.yaml (environment) and pubspec.lock (sdks).
+  FLUTTER_VERSION: '3.38.0'
+  JAVA_VERSION: '17'
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Show toolchain
+        run: |
+          flutter --version
+          dart --version
+          java -version
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify pubspec.lock is in sync with pubspec.yaml
+        run: git diff --exit-code pubspec.lock
+
+      - name: Analyze
+        run: flutter analyze
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run widget + unit tests
+        run: flutter test --coverage --reporter=expanded
+
+      - name: Upload coverage
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-coverage
+          path: coverage/lcov.info
+          if-no-files-found: warn
+
+  playground:
+    name: Playground engine parity
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: playground
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Show Node version
+        run: node --version
+
+      - name: Run engine + markup tests
+        run: node --test test/engine.test.mjs test/markup.test.mjs
