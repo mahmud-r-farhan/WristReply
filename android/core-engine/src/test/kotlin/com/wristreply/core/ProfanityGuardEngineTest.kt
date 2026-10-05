@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.wristreply.core.filters.DefaultBlockedWords
 import com.wristreply.core.filters.ProfanityGuardEngine
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -29,16 +30,17 @@ class ProfanityGuardEngineTest {
     @Test
     fun `returns false when shield is disabled`() {
         val ctx = mockedContext()
-        val (abusive, _) = ProfanityGuardEngine.containsAbusiveContent(ctx, "you are a stupid", isShieldEnabled = false)
+        val (abusive, _) = ProfanityGuardEngine.containsAbusiveContent(ctx, "you are an idiot", isShieldEnabled = false)
         assertFalse(abusive)
     }
 
     @Test
     fun `flags English token from default dictionary`() {
         val ctx = mockedContext()
-        val (abusive, token) = ProfanityGuardEngine.containsAbusiveContent(ctx, "you are stupid", isShieldEnabled = true)
+        // "idiot" ships in DefaultBlockedWords (English + German sections).
+        val (abusive, token) = ProfanityGuardEngine.containsAbusiveContent(ctx, "you are an idiot", isShieldEnabled = true)
         assertTrue(abusive)
-        assertTrue(token == "stupid" || token == "idiot" || token == "dumb")
+        assertEquals("idiot", token)
     }
 
     @Test

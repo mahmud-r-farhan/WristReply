@@ -27,8 +27,18 @@ class MetricsLedgerTest {
         MetricsLedger.recordInference(latencyMs = 50L)
         MetricsLedger.recordInference(latencyMs = 100L)
         val metrics = MetricsLedger.getMetrics()
-        assertEquals(2L, metrics.cacheHits + (metrics.avgLatencyMs / 50)) // cache not hit
+        // (50 + 100) / 2 samples == 75ms. The previous assertion divided the
+        // average by 50 and compared it against the sample count, which can
+        // never hold for an integer division result of 1.
+        assertEquals(75L, metrics.avgLatencyMs)
+        assertEquals(0L, metrics.cacheHits)
         assertTrue(metrics.avgLatencyMs >= 50L)
+    }
+
+    @Test
+    fun `reports the documented idle default when no inference ran yet`() {
+        // The dashboard renders 18ms as the "engine idle" baseline.
+        assertEquals(18L, MetricsLedger.getMetrics().avgLatencyMs)
     }
 
     @Test
@@ -46,6 +56,9 @@ class MetricsLedgerTest {
         val metrics = MetricsLedger.getMetrics()
         assertEquals(0L, metrics.repliesDispatched)
         assertEquals(0L, metrics.cacheHits)
-        assertEquals(0L, metrics.avgLatencyMs)
+        // With zero samples the ledger reports the documented 18ms idle
+        // baseline (the value the Flutter cockpit renders before first use),
+        // not 0 — the old assertion contradicted MetricsLedger.getMetrics().
+        assertEquals(18L, metrics.avgLatencyMs)
     }
 }

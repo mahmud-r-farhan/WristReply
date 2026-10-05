@@ -14,8 +14,11 @@ import org.mockito.Mockito.`when`
  * Unit tests for the [NotificationGate] filter — the first line of defense
  * before any NLP compute is allocated.
  *
- * We use Mockito to fabricate [StatusBarNotification] instances without
- * needing a real Android runtime.
+ * [StatusBarNotification], [Notification] and [Bundle] are all fabricated with
+ * Mockito. The bundle in particular *must* be a mock: JVM unit tests run
+ * against the stubbed `android.jar`, where a real `Bundle` silently swallows
+ * every `putCharSequence`/`putBoolean` call and returns `null` on read, which
+ * would make the gate reject every fixture.
  */
 class NotificationGateTest {
 
@@ -32,9 +35,11 @@ class NotificationGateTest {
         `when`(notification.flags).thenReturn(flags)
         `when`(notification.category).thenReturn(category)
 
-        val extras = Bundle()
-        if (text != null) extras.putCharSequence(Notification.EXTRA_TEXT, text)
-        if (extraIsWristReply) extras.putBoolean(NotificationGate.EXTRA_IS_WRIST_REPLY, true)
+        val extras = mock(Bundle::class.java)
+        `when`(extras.getCharSequence(Notification.EXTRA_TEXT)).thenReturn(text)
+        `when`(extras.getCharSequence(Notification.EXTRA_BIG_TEXT)).thenReturn(null)
+        `when`(extras.getBoolean(NotificationGate.EXTRA_IS_WRIST_REPLY, false))
+            .thenReturn(extraIsWristReply)
         `when`(notification.extras).thenReturn(extras)
 
         return sbn
@@ -66,6 +71,12 @@ class NotificationGateTest {
     @Test
     fun `rejects blank messages`() {
         val sbn = makeSbn(text = "   ")
+        assertFalse(NotificationGate.shouldProcess(sbn))
+    }
+
+    @Test
+    fun `rejects messages without any text payload`() {
+        val sbn = makeSbn(text = null)
         assertFalse(NotificationGate.shouldProcess(sbn))
     }
 

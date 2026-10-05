@@ -1,6 +1,7 @@
 package com.wristreply.core
 
 import com.wristreply.core.nlp.FallbackReplyEngine
+import com.wristreply.core.nlp.LanguageReplyBanks
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -20,7 +21,10 @@ class FallbackReplyEngineTest {
 
     @Test
     fun `Spanish pattern triggers Spanish fallback`() {
-        val result = FallbackReplyEngine.resolveFallback(incomingText = "Hola amigo, donde estas?")
+        val result = FallbackReplyEngine.resolveFallback(
+            incomingText = "Hola amigo, donde estas?",
+            applyChronoBias = false,
+        )
         assertTrue(result.isNotEmpty())
         assertTrue(
             result.any { it.contains("camino", ignoreCase = true) || it.contains("bien", ignoreCase = true) },
@@ -30,7 +34,10 @@ class FallbackReplyEngineTest {
 
     @Test
     fun `German pattern triggers German fallback`() {
-        val result = FallbackReplyEngine.resolveFallback(incomingText = "Hallo, wo bist du?")
+        val result = FallbackReplyEngine.resolveFallback(
+            incomingText = "Hallo, wo bist du?",
+            applyChronoBias = false,
+        )
         assertTrue(result.isNotEmpty())
         assertTrue(
             result.any { it.contains("unterwegs", ignoreCase = true) || it.contains("klar", ignoreCase = true) },
@@ -40,7 +47,10 @@ class FallbackReplyEngineTest {
 
     @Test
     fun `Arabic script triggers Arabic fallback`() {
-        val result = FallbackReplyEngine.resolveFallback(incomingText = "وينك يا غالي؟")
+        val result = FallbackReplyEngine.resolveFallback(
+            incomingText = "وينك يا غالي؟",
+            applyChronoBias = false,
+        )
         assertTrue(result.isNotEmpty())
         assertTrue(
             result.any { it.contains("الطريق") || it.contains("تمام") },
@@ -50,7 +60,10 @@ class FallbackReplyEngineTest {
 
     @Test
     fun `Bengali script triggers Bengali fallback`() {
-        val result = FallbackReplyEngine.resolveFallback(incomingText = "কেমন আছো?")
+        val result = FallbackReplyEngine.resolveFallback(
+            incomingText = "কেমন আছো?",
+            applyChronoBias = false,
+        )
         assertTrue(result.isNotEmpty())
         assertTrue(
             result.any { it.contains("হ্যাঁ") || it.contains("কথা বলছি") },
@@ -60,8 +73,8 @@ class FallbackReplyEngineTest {
 
     @Test
     fun `professional tone swaps casual banks for pro banks`() {
-        val casual = FallbackReplyEngine.resolveFallback("Hola amigo", tone = "casual")
-        val pro = FallbackReplyEngine.resolveFallback("Hola amigo", tone = "professional")
+        val casual = FallbackReplyEngine.resolveFallback("Hola amigo", tone = "casual", applyChronoBias = false)
+        val pro = FallbackReplyEngine.resolveFallback("Hola amigo", tone = "professional", applyChronoBias = false)
         assertTrue(casual.isNotEmpty() && pro.isNotEmpty())
         assertTrue(casual != pro, "Casual vs professional should produce different lists")
     }
@@ -74,5 +87,17 @@ class FallbackReplyEngineTest {
             applyChronoBias = false,
         )
         assertTrue(result.isNotEmpty())
+    }
+
+    @Test
+    fun `chrono bias off always reaches the daytime locale banks`() {
+        // Regression guard: the late-night bias reads the wall clock, so every
+        // locale assertion above pins applyChronoBias = false. Without that the
+        // suite silently switched banks between 23:00 and 06:59 and went red.
+        val daytime = FallbackReplyEngine.resolveFallback(
+            incomingText = "Hola amigo, donde estas?",
+            applyChronoBias = false,
+        )
+        assertEquals(LanguageReplyBanks.SPANISH_CASUAL, daytime)
     }
 }

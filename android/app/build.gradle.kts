@@ -111,5 +111,9 @@ dependencies {
     implementation(project(":core-engine"))
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.6.1")
+    // Provides `LifecycleOwner.lifecycleScope`, used by MainActivity to host the
+    // MethodChannel bridge. Declared explicitly instead of relying on whichever
+    // lifecycle version the Flutter embedding happens to pull in.
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
