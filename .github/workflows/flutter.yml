@@ -62,7 +62,12 @@ jobs:
           exit 1
 
       - name: Verify pubspec.lock is in sync with pubspec.yaml
-        run: git diff --exit-code pubspec.lock
+        run: |
+          if ! git diff --quiet pubspec.lock; then
+            echo "::error title=pubspec-lock-drift::$(git diff pubspec.lock | grep -E '^[+-][^+-]' | tr '\n' ' ' | cut -c1-1800)"
+            git --no-pager diff pubspec.lock
+            exit 1
+          fi
 
       - name: Analyze
         run: flutter analyze
