@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WristReply AI — Offline Smart Reply Playground (Vanilla JS)</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="brand-row">
+                <div class="brand-title">
+                    <span class="logo-icon">W</span> WristReply AI Playground
+                </div>
+                <div class="status-badge">OFFLINE ENGINE ACTIVE</div>
+            </div>
+            <p class="subtitle">
+                Zero-cloud on-device smart reply generator simulation. Try typing incoming messages in Bengali, Banglish, Spanish, Arabic, English, or test OTP & location resolution.
+            </p>
+        </header>
+
+        <div class="card">
+            <div class="card-header">
+                <span>Preset Quick Tests</span>
+            </div>
+            <div class="preset-buttons">
+                <button class="preset-btn" data-text="Kemon acho bhai? Kothay tumi?">Banglish (Kemon/Kothay)</button>
+                <button class="preset-btn" data-text="কেমন আছো? কখন আসছো?">Bengali Script (কেমন আছো)</button>
+                <button class="preset-btn" data-text="Hola amigo, ¿dónde estás?">Spanish (Hola/Dónde)</button>
+                <button class="preset-btn" data-text="وينك يا غالي؟ متى توصل؟">Arabic (وينك/متى)</button>
+                <button class="preset-btn" data-text="Your verification OTP is 849201">OTP Code (849201)</button>
+                <button class="preset-btn" data-text="Where are you right now? 📍">Location Request (📍)</button>
+                <button class="preset-btn" data-text="bKash sent 1500 Tk from 01700000000">bKash Payment Token</button>
+            </div>
+
+            <div class="input-group">
+                <textarea id="messageInput" placeholder="Type an incoming message string here...">Kemon acho bhai? Kothay tumi?</textarea>
+            </div>
+
+            <div class="controls-row">
+                <div class="control-item">
+                    <label for="localeSelect">LOCALE OVERRIDE</label>
+                    <select id="localeSelect">
+                        <option value="auto">Auto Detect (Default)</option>
+                        <option value="en-US">English (en-US)</option>
+                        <option value="bn-BD">Bengali (bn-BD)</option>
+                        <option value="es-ES">Spanish (es-ES)</option>
+                        <option value="ar-MENA">Arabic (ar-MENA)</option>
+                        <option value="de-DE">German (de-DE)</option>
+                    </select>
+                </div>
+
+                <div class="toggle-item">
+                    <span>Driving Mode Override</span>
+                    <label class="switch">
+                        <input type="checkbox" id="drivingToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span>Generated Action Pills (Tap to Simulate Watch Dispatch)</span>
+            </div>
+            <div id="pillsContainer" class="pills-container">
+                <!-- Smart reply pills will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span>Inference Metrics Ledger</span>
+            </div>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div id="latencyMetric" class="metric-value">0.12 ms</div>
+                    <div class="metric-label">Inference Latency</div>
+                </div>
+                <div class="metric-card">
+                    <div id="localeMetric" class="metric-value">bn-BD</div>
+                    <div class="metric-label">Detected Locale</div>
+                </div>
+                <div class="metric-card">
+                    <div id="ruleMetric" class="metric-value">BanglishMatcher</div>
+                    <div class="metric-label">Pipeline Gate</div>
+                </div>
+                <div class="metric-card">
+                    <div id="countMetric" class="metric-value">3 pills</div>
+                    <div class="metric-label">Action Candidates</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span>Architecture & Zero-Cloud Contract</span>
+            </div>
+            <p style="color: var(--text-secondary); font-size: 13px; line-height: 1.6;">
+                The WristReply AI engine operates 100% on-device. Incoming notification payload strings are parsed through low-latency heuristics and local NLP models. No data ever leaves the local process.
+            </p>
+        </div>
+
+        <footer>
+            WristReply AI Engine • Standalone Vanilla JS & HTML Playground • Apache 2.0 License
+        </footer>
+    </div>
+
+    <div id="toast" class="toast">Dispatched to smartwatch!</div>
+
+    <script src="playground.js"></script>
+</body>
+</html>
