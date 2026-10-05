@@ -31,7 +31,7 @@ class AppStrings {
   static const String grantOptional = 'ENABLE OPTIONAL';
   static const String launchConsole = 'LAUNCH CONSOLE';
 
-  static const String liveConsole = 'WRISTREPLY CONSOLE';
+  static const String liveConsole = 'WRISTREPLY CONSOLE (BETA)';
   static const String liveIndicator = 'LIVE';
   static const String engineStatus = 'HARDWARE & ENGINE STATUS';
   static const String performanceSnapshot = 'PERFORMANCE SNAPSHOT';
