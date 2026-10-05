@@ -1,0 +1,24 @@
+name: wristreply_playground
+description: >
+  Web playground showcasing the WristReply AI reply engine. Generates
+  context-aware reply pills on-device using a Dart mirror of the
+  Kotlin FallbackReplyEngine contract, no Android build required.
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.5.0
+  flutter: ">=3.24.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true

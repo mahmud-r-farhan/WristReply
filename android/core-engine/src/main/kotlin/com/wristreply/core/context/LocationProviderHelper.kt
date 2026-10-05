@@ -13,8 +13,19 @@ import androidx.core.content.ContextCompat
  */
 object LocationProviderHelper {
 
+    private const val LOCATION_PREFIX_BRACKET = "[📍"
+    private const val LOCATION_PREFIX_BARE = "📍"
+
+    /**
+     * Returns the actual text to dispatch for a reply pill. If the pill is a
+     * location pin ([📍...] or bare 📍...) and the user has granted location
+     * permission, we substitute a Google Maps URL with the last-known
+     * coordinates. Otherwise we return a graceful fallback sentence.
+     */
     fun resolveDispatchText(context: Context, replyText: String): String {
-        if (!replyText.startsWith("[📍")) return replyText
+        val isLocationPill = replyText.startsWith(LOCATION_PREFIX_BRACKET) ||
+            replyText.startsWith(LOCATION_PREFIX_BARE)
+        if (!isLocationPill) return replyText
 
         if (!hasLocationPermission(context)) {
             return "📍 On my way, sharing location shortly."

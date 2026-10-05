@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'core/constants/app_colors.dart';
 import 'core/constants/app_strings.dart';
 import 'core/platform/native_channel.dart';
 import 'core/theme/app_theme.dart';
 import 'features/dashboard/screens/dashboard_screen.dart';
 import 'features/onboarding/screens/disclosure_screen.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Allow both portrait and landscape orientations so the cockpit can adopt
+  // its dual-pane layout on foldables, flips, and tablets.
+  await SystemChrome.setPreferredOrientations(<DeviceOrientation>[
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
+  ]);
   runApp(const WristReplyApp());
 }
 
@@ -37,7 +46,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _routeNext();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _routeNext());
   }
 
   Future<void> _routeNext() async {
@@ -56,7 +65,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
-        child: CircularProgressIndicator(color: Color(0xFF38EF7D)),
+        child: CircularProgressIndicator(color: AppColors.accentMint),
       ),
     );
   }

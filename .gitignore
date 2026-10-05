@@ -1,4 +1,8 @@
-# Miscellaneous
+# ====================================================
+#  WristReply AI — Top-level .gitignore
+# ====================================================
+
+# --- Miscellaneous ----------------------------------
 *.class
 *.log
 *.pyc
@@ -11,35 +15,93 @@
 .svn/
 .swiftpm/
 migrate_working_dir/
+Thumbs.db
+*.bak
+*.orig
+*.rej
 
-# IntelliJ related
+# --- IntelliJ ---------------------------------------
 *.iml
 *.ipr
 *.iws
 .idea/
+*.ipr
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# --- VS Code ----------------------------------------
+.vscode/
 
-# Flutter/Dart/Pub related
+# --- Flutter / Dart / Pub ---------------------------
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
 .flutter-plugins-dependencies
+.flutter-plugins
 .pub-cache/
 .pub/
 /build/
-/coverage/
+coverage/
+playground/build/
+playground/.dart_tool/
+playground/.flutter-plugins
+playground/.flutter-plugins-dependencies
+playground/test/.test_coverage.dart
+playground/web/.last_build_id
 
-# Symbolication related
+# --- Symbolication / Obfuscation --------------------
 app.*.symbols
-
-# Obfuscation related
 app.*.map.json
 
-# Android Studio will place build artifacts here
+# --- Android Studio ---------------------------------
 /android/app/debug
 /android/app/profile
 /android/app/release
+/android/captures
+/android/.gradle
+/android/.cxx
+/android/app/.cxx
+
+# --- Gradle / Maven ---------------------------------
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# --- Sensitive credential paths ---------------------
+*.keystore
+*.jks
+key.properties
+local.properties
+fastlane/report.xml
+fastlane/Inventory
+fastlane/screenshots
+fastlane/test_output
+
+# --- OS / editor noise ------------------------------
+*~
+.fuse_hidden*
+.directory
+.trash-*
+secrets/
+*.env
+*.env.local
+*.env.*.local
+
+# --- Playground output ------------------------------
+playground/.firebase/
+playground/dist/
+playground/.vercel/
+
+# --- Generated coverage / lint reports --------------
+**/coverage/lcov.info
+**/build/**/coverage/
+**/reports/
+
+# --- Python (used by tooling) ----------------------
+__pycache__/
+*.py[cod]
+*$py.class
+.mypy_cache/
+.pytest_cache/
+.venv/
+venv/

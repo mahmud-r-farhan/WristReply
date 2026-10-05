@@ -7,7 +7,9 @@ import '../widgets/ai_permission_modal.dart';
 import '../widgets/permission_card.dart';
 
 /// Screen 1B: Zero-Friction Permissions Handshake with real-time lifecycle refresh.
+///
 /// Optimized for foldables, flips, tablets, and compact cover displays.
+/// Re-evaluates permission state whenever the user resumes from system settings.
 class PermissionScreen extends StatefulWidget {
   const PermissionScreen({super.key});
 
@@ -19,6 +21,7 @@ class _PermissionScreenState extends State<PermissionScreen> with WidgetsBinding
   bool _isListenerGranted = false;
   bool _isBatteryIgnored = false;
   bool _isNotificationGranted = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -44,13 +47,27 @@ class _PermissionScreenState extends State<PermissionScreen> with WidgetsBinding
     final listener = await NativeChannel.isListenerRunning();
     final battery = await NativeChannel.isBatteryOptimizationIgnored();
     final notification = await NativeChannel.isNotificationPermissionGranted();
-    if (mounted) {
-      setState(() {
-        _isListenerGranted = listener;
-        _isBatteryIgnored = battery;
-        _isNotificationGranted = notification;
-      });
+    if (!mounted) return;
+    setState(() {
+      _isListenerGranted = listener;
+      _isBatteryIgnored = battery;
+      _isNotificationGranted = notification;
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _launchConsole() async {
+    if (!_isListenerGranted) {
+      // Defensive: don't allow forward navigation if permission was revoked
+      // while the user was on this screen.
+      await _checkPermissions();
+      if (!mounted || !_isListenerGranted) return;
     }
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const DashboardScreen()),
+    );
   }
 
   @override
@@ -91,6 +108,7 @@ class _PermissionScreenState extends State<PermissionScreen> with WidgetsBinding
                     title: AppStrings.notificationBridgeTitle,
                     description: AppStrings.notificationBridgeDesc,
                     isGranted: _isListenerGranted,
+                    isLoading: _isLoading,
                     actionLabel: AppStrings.grantAccess,
                     onAction: () async => await NativeChannel.requestListenerPermission(),
                   ),
@@ -99,6 +117,7 @@ class _PermissionScreenState extends State<PermissionScreen> with WidgetsBinding
                     title: AppStrings.backgroundKeepAliveTitle,
                     description: AppStrings.backgroundKeepAliveDesc,
                     isGranted: _isBatteryIgnored,
+                    isLoading: _isLoading,
                     actionLabel: AppStrings.whitelistMe,
                     onAction: () async => await NativeChannel.requestBatteryExemption(),
                   ),
@@ -107,6 +126,7 @@ class _PermissionScreenState extends State<PermissionScreen> with WidgetsBinding
                     title: AppStrings.notificationPostingTitle,
                     description: AppStrings.notificationPostingDesc,
                     isGranted: _isNotificationGranted,
+                    isLoading: _isLoading,
                     isOptional: true,
                     actionLabel: AppStrings.grantOptional,
                     onAction: () async => await NativeChannel.requestNotificationPermission(),
@@ -116,14 +136,7 @@ class _PermissionScreenState extends State<PermissionScreen> with WidgetsBinding
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: _isListenerGranted
-                          ? () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(builder: (_) => const DashboardScreen()),
-                              );
-                            }
-                          : null,
+                      onPressed: _isListenerGranted && !_isLoading ? _launchConsole : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.accentMint,
                         disabledBackgroundColor: AppColors.surfaceInteractive,
@@ -131,9 +144,9 @@ class _PermissionScreenState extends State<PermissionScreen> with WidgetsBinding
                         disabledForegroundColor: AppColors.textTertiary,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text(
+                      child: Text(
                         AppStrings.launchConsole,
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 0.5),
                       ),
                     ),
                   ),

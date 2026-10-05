@@ -1,21 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.wristreply.app">
 
+    <!-- ============================================================
+         WristReply AI declares NO android.permission.INTERNET anywhere
+         in the production manifest. This is a privacy-by-construction
+         guarantee — see README.md and SECURITY.md.
+         ============================================================ -->
+
+    <!-- Required to read incoming notifications and inject reply actions. -->
     <uses-permission
         android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
         tools:ignore="ProtectedPermissions" />
+
+    <!-- Required on Android 13+ to post any notification at all. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- Request to ignore battery optimizations so the daemon survives Doze. -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
+    <!-- Bluetooth car-audio detection for the Autonomous Driving Mode. -->
     <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
+    <!-- Calendar busy-event detection for the Meeting pill injection. -->
     <uses-permission android:name="android.permission.READ_CALENDAR" />
+
+    <!-- Location-provider access for the [📍 Location] pill substitution. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!-- Optional: required for exact AlarmManager on Android 12+. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <queries>
         <intent>
             <action android:name="android.intent.action.SENDTO" />
-            <!-- suppress SpellCheckingInspection -->
             <data android:scheme="smsto" />
         </intent>
         <intent>
@@ -33,6 +54,9 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:enableOnBackInvokedCallback="true"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         tools:ignore="MissingClass,Instantiatable">
         <activity
             android:name="com.wristreply.app.MainActivity"

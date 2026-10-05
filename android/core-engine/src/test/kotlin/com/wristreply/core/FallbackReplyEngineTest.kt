@@ -8,7 +8,7 @@ import org.junit.Test
 class FallbackReplyEngineTest {
 
     @Test
-    fun testUserCustomPillsTakePrecedence() {
+    fun `user custom pills take precedence over locale detection`() {
         val custom = listOf("Custom 1", "Custom 2", "Custom 3")
         val result = FallbackReplyEngine.resolveFallback(
             incomingText = "Hey where are you?",
@@ -19,30 +19,60 @@ class FallbackReplyEngineTest {
     }
 
     @Test
-    fun testSpanishPatternDetection() {
+    fun `Spanish pattern triggers Spanish fallback`() {
         val result = FallbackReplyEngine.resolveFallback(incomingText = "Hola amigo, donde estas?")
         assertTrue(result.isNotEmpty())
-        assertTrue(result.any { it.contains("camino", ignoreCase = true) || it.contains("bien", ignoreCase = true) })
+        assertTrue(
+            result.any { it.contains("camino", ignoreCase = true) || it.contains("bien", ignoreCase = true) },
+            "Expected Spanish tokens in $result",
+        )
     }
 
     @Test
-    fun testGermanPatternDetection() {
+    fun `German pattern triggers German fallback`() {
         val result = FallbackReplyEngine.resolveFallback(incomingText = "Hallo, wo bist du?")
         assertTrue(result.isNotEmpty())
-        assertTrue(result.any { it.contains("unterwegs", ignoreCase = true) || it.contains("klar", ignoreCase = true) })
+        assertTrue(
+            result.any { it.contains("unterwegs", ignoreCase = true) || it.contains("klar", ignoreCase = true) },
+            "Expected German tokens in $result",
+        )
     }
 
     @Test
-    fun testArabicScriptDetection() {
+    fun `Arabic script triggers Arabic fallback`() {
         val result = FallbackReplyEngine.resolveFallback(incomingText = "وينك يا غالي؟")
         assertTrue(result.isNotEmpty())
-        assertTrue(result.any { it.contains("الطريق") || it.contains("تمام") })
+        assertTrue(
+            result.any { it.contains("الطريق") || it.contains("تمام") },
+            "Expected Arabic tokens in $result",
+        )
     }
 
     @Test
-    fun testBengaliScriptDetection() {
+    fun `Bengali script triggers Bengali fallback`() {
         val result = FallbackReplyEngine.resolveFallback(incomingText = "কেমন আছো?")
         assertTrue(result.isNotEmpty())
-        assertTrue(result.any { it.contains("হ্যাঁ") || it.contains("কথা বলছি") })
+        assertTrue(
+            result.any { it.contains("হ্যাঁ") || it.contains("কথা বলছি") },
+            "Expected Bengali tokens in $result",
+        )
+    }
+
+    @Test
+    fun `professional tone swaps casual banks for pro banks`() {
+        val casual = FallbackReplyEngine.resolveFallback("Hola amigo", tone = "casual")
+        val pro = FallbackReplyEngine.resolveFallback("Hola amigo", tone = "professional")
+        assertTrue(casual.isNotEmpty() && pro.isNotEmpty())
+        assertTrue(casual != pro, "Casual vs professional should produce different lists")
+    }
+
+    @Test
+    fun `empty user pills fall through to engine`() {
+        val result = FallbackReplyEngine.resolveFallback(
+            incomingText = "Unknown language text",
+            userCustomPills = emptyList(),
+            applyChronoBias = false,
+        )
+        assertTrue(result.isNotEmpty())
     }
 }

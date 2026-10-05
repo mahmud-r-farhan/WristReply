@@ -25,7 +25,14 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
 include(":app")
 include(":core-engine")
 project(":core-engine").projectDir = file("core-engine")
-

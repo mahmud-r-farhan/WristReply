@@ -12,8 +12,11 @@ class PillsCountTile extends StatelessWidget {
     required this.onChanged,
   });
 
+  static const List<int> _allowedCounts = <int>[1, 2, 3, 4, 5];
+
   @override
   Widget build(BuildContext context) {
+    final safeCount = _allowedCounts.contains(count) ? count : 3;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -25,14 +28,31 @@ class PillsCountTile extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            'Pills Per Message',
-            style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Pills Per Message',
+                  style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Maximum action chips rendered under each notification.',
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                ),
+              ],
+            ),
           ),
           DropdownButton<int>(
-            value: count,
+            value: safeCount,
             dropdownColor: AppColors.surfaceRaised,
-            items: [1, 2, 3].map((n) => DropdownMenuItem(value: n, child: Text('$n pills'))).toList(),
+            items: _allowedCounts
+                .map((n) => DropdownMenuItem<int>(
+                      value: n,
+                      child: Text('$n pills', style: const TextStyle(color: AppColors.textPrimary)),
+                    ))
+                .toList(),
             onChanged: (val) {
               if (val != null) onChanged(val);
             },
