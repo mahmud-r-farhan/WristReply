@@ -82,7 +82,10 @@ object OemKeepAliveManager {
         for (component in OEM_COMPONENTS) {
             if (!isComponentAvailable(pm, component)) continue
             val intent = Intent().apply {
-                component = component
+                // `this.` is required: inside `apply` a bare `component` on the
+                // left resolves to the loop variable (locals shadow implicit
+                // receiver members), which is a val and cannot be reassigned.
+                this.component = component
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
             try {

@@ -5,11 +5,15 @@ description: >
   pills directly onto notifications and mirrors them to Wear OS, Zepp OS,
   and budget RTOS smartwatches.
 publish_to: 'none'
-version: 0.1.0+1
+version: 0.2.0+2
 
+# CI pins Flutter 3.47.6, which ships Dart 3.13.5. Flutter 3.38 cannot be used:
+# it ships Dart 3.10.0-290.4.beta, and a pre-release does not satisfy ^3.10.0.
+# pubspec.lock was regenerated under Dart 3.13.5 and now requires Dart
+# >=3.11.0-0, so that — not the floor below — is the effective minimum.
 environment:
-  sdk: ^3.5.0
-  flutter: ">=3.24.0"
+  sdk: ^3.10.0
+  flutter: ">=3.38.0"
 
 dependencies:
   flutter:

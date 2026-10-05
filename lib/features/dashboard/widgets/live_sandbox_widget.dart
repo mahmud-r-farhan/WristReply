@@ -5,8 +5,9 @@ import '../../../core/platform/native_channel.dart';
 import '../../../shared/widgets/reply_pill_preview.dart';
 
 /// Live Testing Sandbox widget enabling simulated on-device replies without a
-/// second phone. Mirrors the public WristReply playground functionality and
-/// is reused by the dashboard and the GitHub Pages playground.
+/// second phone. It calls `NativeChannel.simulateSmartReply`, the same bridge
+/// method the dashboard exposes, so the cockpit can be exercised end to end
+/// without a second handset.
 class LiveSandboxWidget extends StatefulWidget {
   /// Optional pre-populated text shown on first build.
   final String seedText;
@@ -38,7 +39,12 @@ class _LiveSandboxWidgetState extends State<LiveSandboxWidget> {
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.seedText);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _generatePills());
+    // The post-frame callback can outlive the widget when the dashboard is
+    // popped before the first frame completes, so guard before touching state.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _generatePills();
+    });
   }
 
   @override

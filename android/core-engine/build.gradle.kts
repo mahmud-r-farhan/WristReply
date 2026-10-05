@@ -1,7 +1,9 @@
 plugins {
     id("com.android.library")
+    // Required to compile the module's Kotlin sources and to configure the
+    // compiler through `kotlin { compilerOptions { ... } }` below.
+    id("kotlin-android")
     `maven-publish`
-    kotlin("plugin.serialization") version "2.3.20"
 }
 
 android {

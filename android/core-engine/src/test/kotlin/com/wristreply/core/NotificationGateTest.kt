@@ -14,29 +14,38 @@ import org.mockito.Mockito.`when`
  * Unit tests for the [NotificationGate] filter — the first line of defense
  * before any NLP compute is allocated.
  *
- * We use Mockito to fabricate [StatusBarNotification] instances without
- * needing a real Android runtime.
+ * [StatusBarNotification] and [Bundle] are fabricated with Mockito. The bundle
+ * in particular *must* be a mock: JVM unit tests run against the stubbed
+ * `android.jar`, where a real `Bundle` silently swallows every
+ * `putCharSequence`/`putBoolean` call and returns `null` on read, which would
+ * make the gate reject every fixture.
+ *
+ * [Notification] is a real instance instead, because `flags` and `extras` are
+ * public *fields* rather than methods — Mockito cannot stub a field access and
+ * fails with `MissingMethodInvocationException`.
  */
 class NotificationGateTest {
 
     private fun makeSbn(
         flags: Int = 0,
-        category: String? = Notification.CATEGORY_MESSAGE,
         text: String? = "hello world",
         extraIsWristReply: Boolean = false,
     ): StatusBarNotification {
+        val extras = mock(Bundle::class.java)
+        `when`(extras.getCharSequence(Notification.EXTRA_TEXT)).thenReturn(text)
+        `when`(extras.getCharSequence(Notification.EXTRA_BIG_TEXT)).thenReturn(null)
+        `when`(extras.getBoolean(NotificationGate.EXTRA_IS_WRIST_REPLY, false))
+            .thenReturn(extraIsWristReply)
+
+        // `this.` is required inside `apply`: a bare `flags`/`extras` on the left
+        // resolves to the parameter (locals shadow implicit receiver members).
+        val notification = Notification().apply {
+            this.flags = flags
+            this.extras = extras
+        }
+
         val sbn = mock(StatusBarNotification::class.java)
-        val notification = mock(Notification::class.java)
-
         `when`(sbn.notification).thenReturn(notification)
-        `when`(notification.flags).thenReturn(flags)
-        `when`(notification.category).thenReturn(category)
-
-        val extras = Bundle()
-        if (text != null) extras.putCharSequence(Notification.EXTRA_TEXT, text)
-        if (extraIsWristReply) extras.putBoolean(NotificationGate.EXTRA_IS_WRIST_REPLY, true)
-        `when`(notification.extras).thenReturn(extras)
-
         return sbn
     }
 
@@ -70,14 +79,22 @@ class NotificationGateTest {
     }
 
     @Test
-    fun `accepts plain message with category MESSAGE`() {
+    fun `rejects messages without any text payload`() {
+        val sbn = makeSbn(text = null)
+        assertFalse(NotificationGate.shouldProcess(sbn))
+    }
+
+    @Test
+    fun `accepts plain message with text`() {
         val sbn = makeSbn()
         assertTrue(NotificationGate.shouldProcess(sbn))
     }
 
     @Test
-    fun `accepts message without category but with text`() {
-        val sbn = makeSbn(category = null, text = "hi")
+    fun `accepts a message regardless of its category tag`() {
+        // The gate deliberately never inspects Notification.category — only the
+        // flags, the self-injection extra and the text payload.
+        val sbn = makeSbn(text = "hi")
         assertTrue(NotificationGate.shouldProcess(sbn))
     }
 }

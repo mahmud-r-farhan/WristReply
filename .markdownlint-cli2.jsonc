@@ -1,0 +1,16 @@
+{
+  // markdownlint-cli2 configuration.
+  //
+  // markdownlint-cli2 does NOT read `.markdownlint.json` (that is the
+  // markdownlint-cli config name), which is why CI used to lint with the
+  // stock 80-column defaults and fail on every long badge line. This file
+  // points cli2 at the shared rule set and scopes the run.
+  "config": ".markdownlint.json",
+  "globs": ["**/*.md"],
+  "ignores": [
+    "**/node_modules/**",
+    "**/build/**",
+    "**/.dart_tool/**",
+    "coverage/**"
+  ]
+}

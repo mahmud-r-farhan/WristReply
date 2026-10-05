@@ -3,6 +3,10 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
+    // Required by the `kotlin { compilerOptions { ... } }` block below and by the
+    // module's .kt sources. Without it Gradle fails configuration with
+    // "Unresolved reference: jvmToolchain / compilerOptions / jvmTarget".
+    id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -65,17 +69,13 @@ android {
         }
     }
 
-    // Android 14 introduced automatic app archive generation (AAB) and per-language
-    // resource compression. WristReply is a privacy-first app, so we explicitly keep
-    // the AAB split into per-ABI for the smallest install footprint.
-    splits {
-        abi {
-            isEnable = true
-            reset()
-            include("armeabi-v7a", "arm64-v8a", "x86_64")
-            isUniversalApk = true
-        }
-    }
+    // No `splits { abi { ... } }` block here, on purpose.
+    //
+    // Gradle ABI splits are an APK-only mechanism and are mutually exclusive
+    // with Android App Bundles: enabling them makes `bundleRelease` fail, so
+    // `flutter build appbundle` could never produce an .aab. The bundle is
+    // already delivered per-ABI by Play's dynamic delivery, and per-ABI APKs
+    // remain available through `flutter build apk --split-per-abi`.
 
     packaging {
         resources {
@@ -111,5 +111,9 @@ dependencies {
     implementation(project(":core-engine"))
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.6.1")
+    // Provides `LifecycleOwner.lifecycleScope`, used by MainActivity to host the
+    // MethodChannel bridge. Declared explicitly instead of relying on whichever
+    // lifecycle version the Flutter embedding happens to pull in.
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

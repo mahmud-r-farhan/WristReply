@@ -1,0 +1,136 @@
+name: Android
+
+# Builds the Flutter Android host app and runs the standalone Kotlin
+# core-engine unit tests (the daemon that actually ships in the .aar).
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  FLUTTER_VERSION: '3.47.6'
+  JAVA_VERSION: '17'
+
+jobs:
+  build-apk:
+    name: Build Android app
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Cache Gradle
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-app-${{ hashFiles('android/**/*.gradle*', 'android/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-app-
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build debug APK
+        run: flutter build apk --debug
+
+      - name: Build release APK (debug-signed)
+        run: flutter build apk --release
+
+      - name: Build app bundle
+        run: flutter build appbundle
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: wristreply-android-build
+          path: |
+            build/app/outputs/flutter-apk/*.apk
+            build/app/outputs/bundle/release/*.aab
+          if-no-files-found: warn
+
+  core-engine:
+    name: Kotlin core-engine (JUnit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      # settings.gradle.kts resolves flutter.sdk from android/local.properties
+      # or FLUTTER_ROOT, so the Flutter SDK has to be present even for a
+      # pure-Kotlin Gradle invocation.
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Cache Gradle
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-engine-${{ hashFiles('android/**/*.gradle*', 'android/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-engine-
+
+      - name: Point Gradle at the Flutter SDK
+        working-directory: android
+        run: |
+          echo "flutter.sdk=$FLUTTER_ROOT" > local.properties
+          chmod +x gradlew
+          cat local.properties
+
+      - name: Run :core-engine unit tests
+        working-directory: android
+        run: ./gradlew :core-engine:testDebugUnitTest --stacktrace
+
+      - name: Build core-engine AAR
+        working-directory: android
+        run: ./gradlew :core-engine:assembleRelease --stacktrace
+
+      - name: Upload AAR
+        uses: actions/upload-artifact@v7
+        with:
+          name: wristreply-core-engine-aar
+          path: build/core-engine/outputs/aar/
+          if-no-files-found: warn
+
+      - name: Upload JUnit report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: core-engine-junit-report
+          path: build/core-engine/reports/tests/
+          if-no-files-found: warn

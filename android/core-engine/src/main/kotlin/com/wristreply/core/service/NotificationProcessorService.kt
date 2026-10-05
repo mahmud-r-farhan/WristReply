@@ -162,13 +162,15 @@ class NotificationProcessorService : NotificationListenerService() {
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
         super.onNotificationRemoved(sbn)
-        sbn?.let {
-            NotificationPublisher.cancelCompanion(applicationContext, it.id)
-            val sender = it.notification?.extras?.getCharSequence(android.app.Notification.EXTRA_TITLE)?.toString()
-            if (sender != null) {
-                MessageDebounceBuffer.clearBuffer(sender)
-                DelayedReplyScheduler.cancelScheduledReply(applicationContext, sender)
-            }
+        val activeSbn = sbn ?: return
+        if (activeSbn.packageName == applicationContext.packageName) return
+        if (activeSbn.notification?.extras?.getBoolean(NotificationGate.EXTRA_IS_WRIST_REPLY, false) == true) return
+
+        NotificationPublisher.cancelCompanion(applicationContext, activeSbn.id)
+        val sender = activeSbn.notification?.extras?.getCharSequence(android.app.Notification.EXTRA_TITLE)?.toString()
+        if (sender != null) {
+            MessageDebounceBuffer.clearBuffer(sender)
+            DelayedReplyScheduler.cancelScheduledReply(applicationContext, sender)
         }
     }
 

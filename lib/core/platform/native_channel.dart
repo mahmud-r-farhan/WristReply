@@ -158,13 +158,13 @@ class NativeChannel {
     } catch (_) {}
   }
 
-  /// Generates smart replies for the supplied message text. Used by both the
-  /// dashboard sandbox and the GitHub Pages playground.
+  /// Generates smart replies for the supplied message text. Backs the live
+  /// sandbox on the dashboard.
   ///
-  /// On non-Android platforms (Flutter Web playground) the engine isn't
-  /// available — we fall back to an offline locale-detection routine that
-  /// mirrors the Kotlin [FallbackReplyEngine] contract so the playground
-  /// still demonstrates the same reply behavior.
+  /// On non-Android platforms the engine isn't available — we fall back to an
+  /// offline locale-detection routine that mirrors the contract of the Kotlin
+  /// `FallbackReplyEngine` (android/core-engine/nlp) so the live sandbox in the
+  /// cockpit still demonstrates the same reply behaviour.
   static Future<List<String>> simulateSmartReply(String messageText) async {
     try {
       final res = await _channel.invokeListMethod<String>('simulateSmartReply', <String, Object?>{
@@ -205,6 +205,22 @@ class NativeChannel {
     }
     if (RegExp(r'\b(kothay|koi|kemon|aschis|hobe)\b').hasMatch(lower)) {
       return const ['Astechi 5 min e', 'Ekhon ektu busy achi', 'Call dao ektu por'];
+    }
+    // Intent heuristics (inspired by smart-reply-ai)
+    if (RegExp(r'\b(how are you|how’s it going|how are things|doing good|how r u)\b').hasMatch(lower)) {
+      return const ['Doing great, thanks! You?', 'All good on my side!', 'Pretty good, keeping busy!'];
+    }
+    if (RegExp(r'\b(hi|hello|hey|good morning|good afternoon|good evening|howdy|sup)\b').hasMatch(lower)) {
+      return const ["Hey! What's up?", 'Hello! How can I help?', 'Hey there, good to hear from you!'];
+    }
+    if (RegExp(r'\b(thank you|thanks|thx|appreciate it|grateful)\b').hasMatch(lower)) {
+      return const ["You're welcome! 😊", 'Anytime! Glad to help.', 'No problem at all! 👍'];
+    }
+    if (RegExp(r'\b(meet|schedule|call|sync|zoom|teams|calendar)\b').hasMatch(lower)) {
+      return const ['Sure thing, shoot over an invite!', 'Sounds good! What time works?', 'Down for a quick chat. When are you free?'];
+    }
+    if (lower.trim().endsWith('?')) {
+      return const ['Sounds good!', 'Let me check and get back to you.', 'Not sure, will let you know shortly.'];
     }
     return const ['Sounds good!', 'On my way!', "Can't talk now, text later."];
   }

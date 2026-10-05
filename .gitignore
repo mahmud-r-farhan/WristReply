@@ -40,12 +40,6 @@ Thumbs.db
 .pub/
 /build/
 coverage/
-playground/build/
-playground/.dart_tool/
-playground/.flutter-plugins
-playground/.flutter-plugins-dependencies
-playground/test/.test_coverage.dart
-playground/web/.last_build_id
 
 # --- Symbolication / Obfuscation --------------------
 app.*.symbols
@@ -87,10 +81,8 @@ secrets/
 *.env.local
 *.env.*.local
 
-# --- Playground output ------------------------------
-playground/.firebase/
-playground/dist/
-playground/.vercel/
+# --- Playground (static site: no build output) ------
+playground/node_modules/
 
 # --- Generated coverage / lint reports --------------
 **/coverage/lcov.info

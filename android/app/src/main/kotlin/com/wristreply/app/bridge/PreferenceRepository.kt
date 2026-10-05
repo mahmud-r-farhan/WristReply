@@ -25,7 +25,7 @@ class PreferenceRepository(private val context: Context) {
         map[PrefKeys.KEY_LOCATION_PIN_ENABLED] = runtimePrefs.getBoolean(PrefKeys.KEY_LOCATION_PIN_ENABLED, false)
 
         val pills = runtimePrefs.getStringSet(PrefKeys.KEY_CUSTOM_FALLBACK_PILLS, null)
-            ?: setOf("On my way!", "In a meeting, call later.", "Sounds good!")
+            ?: emptySet()
         map[PrefKeys.KEY_CUSTOM_FALLBACK_PILLS] = pills.toList()
 
         map[PrefKeys.KEY_PROFANITY_SHIELD] = filterPrefs.getBoolean(PrefKeys.KEY_PROFANITY_SHIELD, true)

@@ -4,8 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wrist_reply/core/constants/app_keys.dart';
 import 'package:wrist_reply/features/dashboard/widgets/live_sandbox_widget.dart';
 
-/// Tests the [LiveSandboxWidget] interactive surface used by both the dashboard
-/// and the GitHub Pages playground.
+/// Tests the [LiveSandboxWidget] interactive surface shown on the dashboard,
+/// with the native bridge mocked through [AppKeys.methodChannel].
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 

@@ -89,9 +89,15 @@ class NativeBridgeHandler(private val context: Context, private val scope: Corou
             "simulateSmartReply" -> {
                 val text = call.argument<String>("messageText") ?: ""
                 scope.launch(Dispatchers.Main) {
+                    val prefsCache = com.wristreply.core.cache.UserPreferencesHotCache(context)
                     val mlReplies = EphemeralMLKitEngine.suggestReplies(text, "Tester")
                     val replies = if (mlReplies.isNotEmpty()) mlReplies else {
-                        FallbackReplyEngine.resolveFallback(text)
+                        FallbackReplyEngine.resolveFallback(
+                            incomingText = text,
+                            userCustomPills = prefsCache.getCustomFallbackPills(),
+                            tone = prefsCache.getConversationTone(),
+                            applyChronoBias = prefsCache.isChronoBiasEnabled()
+                        )
                     }
                     result.success(replies)
                 }

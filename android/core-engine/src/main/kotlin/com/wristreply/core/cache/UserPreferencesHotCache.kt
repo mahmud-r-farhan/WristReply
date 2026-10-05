@@ -14,6 +14,8 @@ class UserPreferencesHotCache(context: Context) {
 
     private val runtimePrefs: SharedPreferences = context.getSharedPreferences(PrefKeys.PREFS_RUNTIME, Context.MODE_PRIVATE)
     private val whitelistPrefs: SharedPreferences = context.getSharedPreferences(PrefKeys.PREFS_WHITELIST, Context.MODE_PRIVATE)
+    private val filterPrefs: SharedPreferences = context.getSharedPreferences(PrefKeys.PREFS_FILTERS, Context.MODE_PRIVATE)
+    private val sleepPrefs: SharedPreferences = context.getSharedPreferences(PrefKeys.PREFS_SLEEP, Context.MODE_PRIVATE)
 
     private val whitelistedApps = CopyOnWriteArraySet<String>()
     private val customFallbackPills = CopyOnWriteArraySet<String>()
@@ -21,24 +23,38 @@ class UserPreferencesHotCache(context: Context) {
     private val stringValues = ConcurrentHashMap<String, String>()
     private val intValues = ConcurrentHashMap<String, Int>()
 
-    private val runtimeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-        key?.let { refreshRuntimeKey(it) }
+    private val prefChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        key?.let { refreshKey(it) }
     }
 
     init {
         hydrateAll()
-        runtimePrefs.registerOnSharedPreferenceChangeListener(runtimeListener)
+        runtimePrefs.registerOnSharedPreferenceChangeListener(prefChangeListener)
+        filterPrefs.registerOnSharedPreferenceChangeListener(prefChangeListener)
+        sleepPrefs.registerOnSharedPreferenceChangeListener(prefChangeListener)
     }
 
     @Synchronized
     fun hydrateAll() {
         val savedApps = runtimePrefs.getStringSet(PrefKeys.KEY_WHITELISTED_PACKAGES, null)
-            ?: setOf("com.whatsapp", "com.facebook.orca", "org.telegram.messenger", "com.google.android.apps.messaging")
+            ?: setOf(
+                "com.whatsapp",
+                "com.whatsapp.w4b",
+                "org.telegram.messenger",
+                "org.telegram.plus",
+                "com.facebook.orca",
+                "com.google.android.apps.messaging",
+                "org.thoughtcrime.securesms",
+                "com.discord",
+                "com.slack",
+                "com.microsoft.teams",
+                "com.samsung.android.messaging"
+            )
         whitelistedApps.clear()
         whitelistedApps.addAll(savedApps)
 
         val savedPills = runtimePrefs.getStringSet(PrefKeys.KEY_CUSTOM_FALLBACK_PILLS, null)
-            ?: setOf("On my way!", "In a meeting, call later.", "Sounds good!")
+            ?: emptySet()
         customFallbackPills.clear()
         customFallbackPills.addAll(savedPills)
 
@@ -46,7 +62,11 @@ class UserPreferencesHotCache(context: Context) {
         booleanFlags[PrefKeys.KEY_NOTIFICATIONS_ENABLED] = runtimePrefs.getBoolean(PrefKeys.KEY_NOTIFICATIONS_ENABLED, true)
         booleanFlags[PrefKeys.KEY_REPLACE_MODE] = runtimePrefs.getBoolean(PrefKeys.KEY_REPLACE_MODE, false)
         booleanFlags[PrefKeys.KEY_PRIVACY_MODE] = runtimePrefs.getBoolean(PrefKeys.KEY_PRIVACY_MODE, false)
-        booleanFlags[PrefKeys.KEY_PROFANITY_SHIELD] = runtimePrefs.getBoolean(PrefKeys.KEY_PROFANITY_SHIELD, true)
+        booleanFlags[PrefKeys.KEY_PROFANITY_SHIELD] = if (filterPrefs.contains(PrefKeys.KEY_PROFANITY_SHIELD)) {
+            filterPrefs.getBoolean(PrefKeys.KEY_PROFANITY_SHIELD, true)
+        } else {
+            runtimePrefs.getBoolean(PrefKeys.KEY_PROFANITY_SHIELD, true)
+        }
         booleanFlags[PrefKeys.KEY_AUTO_COPY_TRX] = runtimePrefs.getBoolean(PrefKeys.KEY_AUTO_COPY_TRX, true)
         booleanFlags[PrefKeys.KEY_AUTO_COPY_OTP] = runtimePrefs.getBoolean(PrefKeys.KEY_AUTO_COPY_OTP, true)
         booleanFlags[PrefKeys.KEY_CHRONO_BIAS_ENABLED] = runtimePrefs.getBoolean(PrefKeys.KEY_CHRONO_BIAS_ENABLED, true)
@@ -63,7 +83,7 @@ class UserPreferencesHotCache(context: Context) {
         intValues[PrefKeys.KEY_DELAYED_REPLY_MINUTES] = runtimePrefs.getInt(PrefKeys.KEY_DELAYED_REPLY_MINUTES, 5)
     }
 
-    private fun refreshRuntimeKey(key: String) {
+    private fun refreshKey(key: String) {
         when (key) {
             PrefKeys.KEY_WHITELISTED_PACKAGES -> {
                 val updated = runtimePrefs.getStringSet(key, emptySet()) ?: emptySet()
@@ -75,6 +95,9 @@ class UserPreferencesHotCache(context: Context) {
                 customFallbackPills.clear()
                 customFallbackPills.addAll(updated)
             }
+            PrefKeys.KEY_PROFANITY_SHIELD -> {
+                booleanFlags[key] = if (filterPrefs.contains(key)) filterPrefs.getBoolean(key, true) else runtimePrefs.getBoolean(key, true)
+            }
             PrefKeys.KEY_CONVERSATION_TONE, PrefKeys.KEY_DELAYED_REPLY_TEMPLATE, PrefKeys.KEY_DRIVING_TEMPLATE -> {
                 stringValues[key] = runtimePrefs.getString(key, "") ?: ""
             }
@@ -83,7 +106,14 @@ class UserPreferencesHotCache(context: Context) {
             }
             else -> {
                 if (booleanFlags.containsKey(key)) {
-                    booleanFlags[key] = runtimePrefs.getBoolean(key, false)
+                    val value = if (filterPrefs.contains(key)) {
+                        filterPrefs.getBoolean(key, false)
+                    } else if (sleepPrefs.contains(key)) {
+                        sleepPrefs.getBoolean(key, false)
+                    } else {
+                        runtimePrefs.getBoolean(key, false)
+                    }
+                    booleanFlags[key] = value
                 }
             }
         }
