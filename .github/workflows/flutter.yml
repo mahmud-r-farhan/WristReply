@@ -49,17 +49,7 @@ jobs:
           echo "::notice title=toolchain::$(flutter --version 2>&1 | tr '\n' ' ' | cut -c1-400)"
 
       - name: Install dependencies
-        id: pubget
-        continue-on-error: true
         run: flutter pub get
-
-      - name: Surface pub get failure
-        if: steps.pubget.outcome == 'failure'
-        run: |
-          set +e
-          flutter pub get > /tmp/pubget.log 2>&1
-          echo "::error title=pub-get::$(tail -n 30 /tmp/pubget.log | tr '\n' ' ' | cut -c1-1800)"
-          exit 1
 
       - name: Verify pubspec.lock is in sync with pubspec.yaml
         run: |
@@ -67,11 +57,8 @@ jobs:
             echo "pubspec.lock is in sync with the pinned toolchain."
             exit 0
           fi
+          echo "pubspec.lock drifted; run `flutter pub get` with Flutter $FLUTTER_VERSION and commit the result."
           git --no-pager diff pubspec.lock
-          # The runner logs are not downloadable from every environment, so emit
-          # the regenerated lockfile as base64 annotations that can be read back
-          # through the check-runs API and committed verbatim.
-          base64 -w 2400 pubspec.lock | awk '{ print "::error title=lock-b64-" NR "::" $0 }'
           exit 1
 
       - name: Analyze
