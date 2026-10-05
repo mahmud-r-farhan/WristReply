@@ -23,9 +23,10 @@ through a `MethodChannel`.
 | --- | --- | --- |
 | Flutter | 3.47.6 | `.github/workflows/*.yml` (minimum 3.38 in `pubspec.yaml`) |
 | Dart SDK | 3.10 | `pubspec.yaml` (`sdk: ^3.10.0`) |
-| Kotlin | 2.1.0 | `android/settings.gradle.kts` |
-| AGP | 8.5.2 | `android/settings.gradle.kts` |
+| Kotlin | 2.4.0 | `android/settings.gradle.kts` |
+| AGP | 8.13.0 | `android/settings.gradle.kts` |
 | JDK | 17 | `android/app/build.gradle.kts`, CI |
+| Gradle | 8.14 | `android/gradle/wrapper/gradle-wrapper.properties` |
 | Android | min SDK 26, compile SDK 36 | `android/app/build.gradle.kts` |
 | Node.js | 18.13+ | playground tests only |
 

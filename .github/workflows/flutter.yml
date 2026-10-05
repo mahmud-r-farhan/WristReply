@@ -63,11 +63,16 @@ jobs:
 
       - name: Verify pubspec.lock is in sync with pubspec.yaml
         run: |
-          if ! git diff --quiet pubspec.lock; then
-            echo "::error title=pubspec-lock-drift::$(git diff pubspec.lock | grep -E '^[+-][^+-]' | tr '\n' ' ' | cut -c1-1800)"
-            git --no-pager diff pubspec.lock
-            exit 1
+          if git diff --quiet pubspec.lock; then
+            echo "pubspec.lock is in sync with the pinned toolchain."
+            exit 0
           fi
+          git --no-pager diff pubspec.lock
+          # The runner logs are not downloadable from every environment, so emit
+          # the regenerated lockfile as base64 annotations that can be read back
+          # through the check-runs API and committed verbatim.
+          base64 -w 1200 pubspec.lock | awk '{ print "::error title=lock-b64-" NR "::" $0 }'
+          exit 1
 
       - name: Analyze
         run: flutter analyze

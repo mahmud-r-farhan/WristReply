@@ -48,8 +48,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - CI pins Flutter **3.47.6** rather than 3.38.0. Flutter 3.38.0 ships Dart `3.10.0-290.4.beta`, and a
   pre-release does not satisfy `sdk: ^3.10.0`, so `flutter pub get` failed version solving; pub itself
   recommends 3.47.6 as the stable release carrying Dart 3.10.
-- Pinned Kotlin to `2.1.0` in `android/settings.gradle.kts`. `compilerOptions { jvmTarget }` in
-  `build.gradle.kts` requires the Kotlin Gradle Plugin 2.0 or newer.
+- Pinned Kotlin to `2.4.0` and AGP to `8.13.0` in `android/settings.gradle.kts`, and bumped the Gradle
+  wrapper from 8.8 to 8.14. Flutter 3.47 refuses anything below AGP 8.11.1 and Gradle 8.14, and KGP
+  2.1.x only documents support up to AGP 8.7.2 — so all three move together. The chosen set is the
+  one Flutter 3.47.6's own template and compatibility tables describe as valid.
+  `compilerOptions { jvmTarget }` also requires KGP 2.0 or newer.
 - Dropped the `kotlin("plugin.serialization")` plugin from `android/core-engine/build.gradle.kts`. It was
   pinned at 2.3.20 while the Android plugin was 1.9.24 (a Kotlin Gradle Plugin version split that fails
   configuration), and the module contains no `@Serializable` type.

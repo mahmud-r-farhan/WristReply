@@ -8,7 +8,7 @@
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.47-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.10-0175C2?logo=dart&logoColor=white)](lib/)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.1-7F52FF?logo=kotlin&logoColor=white)](android/core-engine/)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin&logoColor=white)](android/core-engine/)
 [![Java](https://img.shields.io/badge/JDK-17-ED8B00?logo=openjdk&logoColor=white)](android/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Privacy](https://img.shields.io/badge/Privacy-100%25%20on--device-green)](#-privacy--zero-cloud-guarantee)

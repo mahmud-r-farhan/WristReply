@@ -1,7 +1,7 @@
 # WristReply Core Engine ⚡⌚
 
 [![Android](https://img.shields.io/badge/Platform-Android%208.0%2B%20(API%2026%2B)-3DDC84?logo=android&logoColor=white)](https://developer.android.com)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.1-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
 [![Privacy](https://img.shields.io/badge/Privacy-Zero--Cloud%20%7C%20No%20INTERNET-green)](../../README.md#-privacy--zero-cloud-guarantee)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](../../LICENSE)
 
