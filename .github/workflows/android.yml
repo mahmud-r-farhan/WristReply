@@ -150,8 +150,14 @@ jobs:
           ./gradlew :core-engine:testDebugUnitTest --stacktrace > /tmp/gradle.log 2>&1
           # Runner logs cannot be downloaded from every environment, so emit the
           # compiler diagnostics as base64 annotations readable via the API.
-          grep -E '^e: |^error: |What went wrong|Caused by: ' /tmp/gradle.log | sort -u |
-            base64 -w 2400 | awk '{ print "::error title=gradle-b64-" NR "::" $0 }'
+          {
+            grep -E '^e: |^error: |What went wrong|Caused by: ' /tmp/gradle.log | sort -u
+            echo '--- failing JUnit cases ---'
+            for xml in ../build/core-engine/test-results/testDebugUnitTest/*.xml; do
+              [ -e "$xml" ] || continue
+              grep -B3 '<failure' "$xml" | grep -E 'testcase name|message=' | cut -c1-500
+            done
+          } | base64 -w 2400 | awk '{ print "::error title=gradle-b64-" NR "::" $0 }'
           exit 1
 
       - name: Build core-engine AAR

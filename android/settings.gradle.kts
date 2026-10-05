@@ -46,13 +46,22 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
+// Deliberately no `dependencyResolutionManagement` block here.
+//
+// `RepositoriesMode.PREFER_SETTINGS` makes Gradle ignore project-level
+// repositories, and the Flutter Gradle plugin contributes the engine artifact
+// repository (https://storage.googleapis.com/download.flutter.io) at the
+// *project* level. With that block in place every build failed to resolve
+// io.flutter:arm64_v8a_debug / flutter_embedding_debug:
+//
+//   Could not find io.flutter:arm64_v8a_debug:1.0.0-<engine hash>.
+//     Searched in the following locations:
+//       - https://dl.google.com/dl/android/maven2/...
+//       - https://repo.maven.apache.org/maven2/...
+//
+// Dependency repositories come from `allprojects { repositories { ... } }` in
+// android/build.gradle.kts instead, which is also what Flutter's own app
+// template does.
 
 include(":app")
 include(":core-engine")
