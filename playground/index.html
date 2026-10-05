@@ -1,118 +1,550 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WristReply AI — Offline Smart Reply Playground (Vanilla JS)</title>
-    <link rel="stylesheet" href="styles.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WristReply AI — Live Playground: on-device smart replies for phones &amp; smartwatches</title>
+  <meta name="description" content="Interactive playground for WristReply AI: see how the offline, on-device smart reply engine turns an incoming notification into tappable reply pills on your phone and smartwatch. No account, no network, no build step." />
+  <meta name="theme-color" content="#0B0E14" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2338EF7D'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='20' font-weight='700' text-anchor='middle' fill='%230B0E14'%3EW%3C/text%3E%3C/svg%3E" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS (CDN build) — assets/styles.css carries the offline fallback -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    if (window.tailwind) {
+      document.documentElement.classList.add('tw-ready');
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              canvas: '#0B0E14',
+              raised: '#131823',
+              interactive: '#1C2333',
+              hairline: '#222B3D',
+              mint: '#38EF7D',
+              cyan: '#00F2FE',
+              amber: '#FFB020',
+              danger: '#FF4C4C',
+              ink: '#F1F5F9',
+              muted: '#94A3B8',
+              faint: '#64748B',
+            },
+            fontFamily: {
+              display: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+              sans: ['Inter', 'system-ui', 'sans-serif'],
+              mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+            },
+          },
+        },
+      };
+    }
+  </script>
+
+  <!-- AOS (Animate On Scroll) — CSS + JS from CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" />
+
+  <link rel="stylesheet" href="assets/styles.css" />
 </head>
-<body>
-    <div class="container">
-        <header>
-            <div class="brand-row">
-                <div class="brand-title">
-                    <span class="logo-icon">W</span> WristReply AI Playground
+
+<body class="bg-canvas text-ink font-sans antialiased selection:bg-mint selection:text-canvas">
+  <a href="#playground" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-4 focus:rounded-lg focus:bg-mint focus:px-4 focus:py-2 focus:text-canvas">Skip to the live playground</a>
+
+  <!-- ============================ NAV ============================ -->
+  <header class="sticky top-0 z-40 border-b border-hairline bg-canvas/85 backdrop-blur">
+    <nav class="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 sm:px-6">
+      <a href="#top" class="flex items-center gap-2.5">
+        <span class="grid h-8 w-8 place-items-center rounded-lg bg-mint font-display text-base font-bold text-canvas">W</span>
+        <span class="font-display text-sm font-semibold tracking-tight sm:text-base">WristReply<span class="text-mint"> AI</span></span>
+      </a>
+      <span id="engine-badge" class="hidden rounded-full border border-mint/30 bg-mint/10 px-2.5 py-1 font-mono text-[10px] font-semibold tracking-widest text-mint sm:inline">OFFLINE ENGINE</span>
+
+      <div class="ml-auto hidden items-center gap-1 text-sm text-muted lg:flex">
+        <a href="#playground" class="rounded-lg px-3 py-1.5 transition hover:bg-interactive hover:text-ink">Playground</a>
+        <a href="#what" class="rounded-lg px-3 py-1.5 transition hover:bg-interactive hover:text-ink">What it is</a>
+        <a href="#pipeline" class="rounded-lg px-3 py-1.5 transition hover:bg-interactive hover:text-ink">Pipeline</a>
+        <a href="#privacy" class="rounded-lg px-3 py-1.5 transition hover:bg-interactive hover:text-ink">Privacy</a>
+        <a href="#languages" class="rounded-lg px-3 py-1.5 transition hover:bg-interactive hover:text-ink">Languages</a>
+        <a href="#watches" class="rounded-lg px-3 py-1.5 transition hover:bg-interactive hover:text-ink">Watches</a>
+        <a href="#faq" class="rounded-lg px-3 py-1.5 transition hover:bg-interactive hover:text-ink">FAQ</a>
+      </div>
+
+      <a href="https://github.com/mahmud-r-farhan/WristReply" target="_blank" rel="noopener"
+         class="ml-auto inline-flex items-center gap-2 rounded-lg border border-hairline bg-raised px-3 py-1.5 text-xs font-semibold text-ink transition hover:border-mint/40 hover:text-mint lg:ml-0">
+        <svg viewBox="0 0 16 16" class="h-4 w-4 fill-current" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+        GitHub
+      </a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <!-- ============================ HERO ============================ -->
+    <section class="relative overflow-hidden border-b border-hairline">
+      <div class="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-mint/10 blur-3xl"></div>
+      <div class="pointer-events-none absolute -right-16 top-24 h-72 w-72 rounded-full bg-cyan/10 blur-3xl"></div>
+
+      <div class="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:py-20">
+        <div data-aos="fade-right">
+          <p class="mb-4 inline-flex items-center gap-2 rounded-full border border-hairline bg-raised px-3 py-1 font-mono text-[11px] tracking-widest text-muted">
+            <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-mint"></span>
+            ANDROID · KOTLIN DAEMON · FLUTTER COCKPIT
+          </p>
+          <h1 class="font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
+            Reply from your wrist.<br />
+            <span class="text-mint">Never from the cloud.</span>
+          </h1>
+          <p class="mt-5 max-w-2xl text-base leading-relaxed text-muted sm:text-lg">
+            WristReply AI reads an incoming message <em>on your phone</em>, generates three context-aware
+            quick replies in the language it was written in, and pins them onto the notification so you can
+            answer from your watch, your notification shade, or a foldable cover screen — in about
+            <span class="font-mono text-ink">18&nbsp;ms</span>, with
+            <span class="font-mono text-ink">zero</span> network permission declared.
+          </p>
+
+          <div class="mt-7 flex flex-wrap items-center gap-3">
+            <a href="#playground" class="rounded-xl bg-mint px-5 py-3 text-sm font-bold text-canvas transition hover:brightness-110">Try the live playground</a>
+            <a href="#pipeline" class="rounded-xl border border-hairline bg-raised px-5 py-3 text-sm font-semibold text-ink transition hover:border-mint/40">See how it works</a>
+          </div>
+
+          <dl class="mt-9 grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-4">
+            <div class="wr-stat"><dt>Network calls</dt><dd>0</dd></div>
+            <div class="wr-stat"><dt>Idle RAM</dt><dd>~18 MB</dd></div>
+            <div class="wr-stat"><dt>Languages</dt><dd>8</dd></div>
+            <div class="wr-stat"><dt>Inference</dt><dd>&lt; 50 ms</dd></div>
+          </dl>
+        </div>
+
+        <div class="flex items-center justify-center" data-aos="fade-left" data-aos-delay="120">
+          <!-- Static teaser: watch + phone silhouette -->
+          <div class="relative">
+            <div class="watch-frame watch-frame--round">
+              <div class="watch-face">
+                <span class="watch-time">09:41</span>
+                <span class="watch-sender">Rifat</span>
+                <span class="watch-msg">Kothay tumi?</span>
+                <div class="watch-pills">
+                  <span class="watch-pill">Rastay achi 🏃</span>
+                  <span class="watch-pill watch-pill--accent">5 min e 🔥</span>
                 </div>
-                <div class="status-badge">OFFLINE ENGINE ACTIVE</div>
+              </div>
             </div>
-            <p class="subtitle">
-                Zero-cloud on-device smart reply generator simulation. Try typing incoming messages in Bengali, Banglish, Spanish, Arabic, English, or test OTP & location resolution.
+            <div class="teaser-phone" aria-hidden="true">
+              <span class="teaser-phone-row"></span>
+              <span class="teaser-phone-row short"></span>
+              <span class="teaser-pill"></span>
+              <span class="teaser-pill"></span>
+              <span class="teaser-pill short"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ LIVE PLAYGROUND ============================ -->
+    <section id="playground" class="mx-auto max-w-7xl scroll-mt-20 px-4 py-14 sm:px-6">
+      <div class="mb-8 max-w-3xl" data-aos="fade-up">
+        <h2 class="font-display text-2xl font-bold tracking-tight sm:text-3xl">Live playground</h2>
+        <p class="mt-2 text-muted">
+          This is the real decision engine, compiled to JavaScript from the Kotlin sources in
+          <code class="wr-code">android/core-engine</code>. Type a message (or hit a preset), watch the
+          pipeline run stage by stage, then tap a pill to fire the simulated
+          <code class="wr-code">RemoteInput</code> dispatch on the watch.
+        </p>
+      </div>
+
+      <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <!-- ---------- controls ---------- -->
+        <div class="wr-card" data-aos="fade-up">
+          <h3 class="wr-card-title">1 · Incoming message</h3>
+
+          <label for="message-input" class="sr-only">Incoming message text</label>
+          <textarea id="message-input" rows="3" spellcheck="false"
+            class="wr-input font-mono"
+            placeholder="Type an incoming message…">Kemon acho bhai? Kothay tumi?</textarea>
+
+          <div class="mt-3 flex flex-wrap gap-2" id="presets"></div>
+
+          <h3 class="wr-card-title mt-7">2 · Engine configuration</h3>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <label class="wr-field">
+              <span>Locale override</span>
+              <select id="locale-select" class="wr-select">
+                <option value="auto">Auto detect (default)</option>
+                <option value="en-US">en-US · English</option>
+                <option value="bn-BD">bn-BD · Bengali</option>
+                <option value="bn-BD-Banglish">bn-BD · Banglish</option>
+                <option value="hi-IN">hi-IN · Hindi</option>
+                <option value="es-ES">es-ES · Spanish</option>
+                <option value="de-DE">de-DE · German</option>
+                <option value="pt-BR">pt-BR · Portuguese</option>
+                <option value="fr-FR">fr-FR · French</option>
+                <option value="ar-MENA">ar-MENA · Arabic</option>
+              </select>
+            </label>
+
+            <label class="wr-field">
+              <span>Conversation tone</span>
+              <select id="tone-select" class="wr-select">
+                <option value="casual">Casual</option>
+                <option value="professional">Professional</option>
+              </select>
+            </label>
+
+            <label class="wr-field">
+              <span>Pills per message</span>
+              <input id="pills-range" type="range" min="1" max="5" value="3" class="wr-range" />
+              <output id="pills-output" class="font-mono text-xs text-mint">3</output>
+            </label>
+
+            <label class="wr-field">
+              <span>Meeting ends at</span>
+              <input id="meeting-input" type="text" placeholder="e.g. 3:30 PM (blank = no meeting)" class="wr-input text-sm" />
+            </label>
+          </div>
+
+          <div class="mt-4 grid gap-2 sm:grid-cols-2">
+            <label class="wr-switch"><input type="checkbox" id="toggle-driving" /><span></span><em>Driving mode (car Bluetooth)</em></label>
+            <label class="wr-switch"><input type="checkbox" id="toggle-chrono" /><span></span><em>Late-night chrono bias</em></label>
+            <label class="wr-switch"><input type="checkbox" id="toggle-shield" checked /><span></span><em>LPTE profanity shield</em></label>
+            <label class="wr-switch"><input type="checkbox" id="toggle-location" checked /><span></span><em>Append 📍 location pill</em></label>
+          </div>
+
+          <h3 class="wr-card-title mt-7">3 · Inference metrics ledger</h3>
+          <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div class="wr-metric"><span id="m-latency">0.00 ms</span><b>Inference latency</b></div>
+            <div class="wr-metric"><span id="m-locale">bn-BD</span><b>Detected locale</b></div>
+            <div class="wr-metric"><span id="m-rule">—</span><b>Pipeline gate</b></div>
+            <div class="wr-metric"><span id="m-count">0</span><b>Action pills</b></div>
+          </div>
+
+          <h3 class="wr-card-title mt-7">4 · Device log</h3>
+          <div id="device-log" class="wr-log font-mono" aria-live="polite"></div>
+        </div>
+
+        <!-- ---------- devices ---------- -->
+        <div class="wr-card" data-aos="fade-up" data-aos-delay="80">
+          <div class="flex items-center justify-between gap-3">
+            <h3 class="wr-card-title mb-0">On-device preview</h3>
+            <div class="flex gap-1 rounded-lg border border-hairline bg-canvas p-1" role="group" aria-label="Watch form factor">
+              <button type="button" data-watch="round" class="wr-seg is-active">Round</button>
+              <button type="button" data-watch="square" class="wr-seg">Square</button>
+            </div>
+          </div>
+
+          <!-- pipeline strip -->
+          <div class="mt-4 grid grid-cols-4 gap-1.5 sm:grid-cols-8" id="pipeline-strip"></div>
+
+          <div class="mt-6 grid gap-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+            <!-- phone -->
+            <div class="flex flex-col items-center gap-3">
+              <p class="font-mono text-[11px] tracking-widest text-faint">ANDROID · NOTIFICATION SHADE</p>
+              <div class="phone-frame">
+                <div class="phone-notch"></div>
+                <div class="phone-status">
+                  <span>9:41</span>
+                  <span class="flex items-center gap-1">
+                    <span class="phone-no-signal" title="No INTERNET permission declared">✕ 📶</span>
+                    <span>🔋 82%</span>
+                  </span>
+                </div>
+                <div class="phone-body">
+                  <div class="phone-notif">
+                    <div class="phone-notif-head">
+                      <span class="phone-app-dot"></span>
+                      <span class="phone-app">WhatsApp</span>
+                      <span class="phone-ago">now</span>
+                    </div>
+                    <p id="phone-sender" class="phone-sender">Rifat</p>
+                    <p id="phone-text" class="phone-text">Kemon acho bhai? Kothay tumi?</p>
+                  </div>
+
+                  <div class="phone-notif phone-notif--wr" id="phone-companion">
+                    <div class="phone-notif-head">
+                      <span class="phone-app-dot phone-app-dot--wr"></span>
+                      <span class="phone-app">WristReply · silent companion</span>
+                      <span class="phone-ago">low</span>
+                    </div>
+                    <p id="phone-wr-sub" class="phone-text">Quick replies generated on-device</p>
+                    <div id="phone-pills" class="phone-pills"></div>
+                  </div>
+
+                  <div id="phone-token" class="phone-token hidden"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- watch -->
+            <div class="flex flex-col items-center gap-3">
+              <p class="font-mono text-[11px] tracking-widest text-faint">WEAR OS / ZEPp / RTOS</p>
+              <div id="watch" class="watch-frame watch-frame--round">
+                <div class="watch-face">
+                  <span class="watch-time">09:41</span>
+                  <span class="watch-sender" id="watch-sender">Rifat</span>
+                  <span class="watch-msg" id="watch-msg">Kothay tumi?</span>
+                  <div class="watch-pills" id="watch-pills"></div>
+                  <span class="watch-sent" id="watch-sent">Sent ✓</span>
+                </div>
+              </div>
+              <p class="max-w-[190px] text-center text-[11px] leading-snug text-faint">
+                Tap a pill: the engine attaches your text to the app's <code class="wr-code">RemoteInput</code>
+                and fires its <code class="wr-code">PendingIntent</code>.
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-6 rounded-xl border border-hairline bg-canvas p-4">
+            <p class="font-mono text-[11px] tracking-widest text-faint">DISPATCH RESULT</p>
+            <p id="dispatch-line" class="mt-2 font-mono text-sm text-muted">Waiting for a pill tap…</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ WHAT / HOW / WHY ============================ -->
+    <section id="what" class="scroll-mt-20 border-y border-hairline bg-raised/40">
+      <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6">
+        <h2 class="font-display text-2xl font-bold tracking-tight sm:text-3xl" data-aos="fade-up">What is this, actually?</h2>
+        <p class="mt-2 max-w-3xl text-muted" data-aos="fade-up">
+          A messaging app already gives Android a “reply inline” button on most notifications. WristReply
+          borrows that exact mechanism — it never reads your screen, never injects keystrokes and never
+          opens the chat — and simply supplies <em>better text</em> for the button that is already there.
+        </p>
+
+        <div class="mt-8 grid gap-4 md:grid-cols-3">
+          <article class="wr-card" data-aos="fade-up">
+            <h3 class="wr-card-title">What it is</h3>
+            <p class="text-sm leading-relaxed text-muted">
+              A headless Kotlin <code class="wr-code">NotificationListenerService</code> plus a Flutter
+              cockpit for settings. The service watches the notification stream, decides whether a message
+              deserves an answer, and publishes a <strong class="text-ink">silent companion
+              notification</strong> carrying up to five tappable reply pills.
             </p>
-        </header>
+            <ul class="wr-list mt-3">
+              <li>Runs without Flutter in memory (15–25 MB, 0% idle CPU)</li>
+              <li>Ships as a standalone <code class="wr-code">.aar</code> via <code class="wr-code">EngineBootstrap</code></li>
+              <li>Discoverable at runtime — no hardcoded package list</li>
+            </ul>
+          </article>
 
-        <div class="card">
-            <div class="card-header">
-                <span>Preset Quick Tests</span>
-            </div>
-            <div class="preset-buttons">
-                <button class="preset-btn" data-text="Kemon acho bhai? Kothay tumi?">Banglish (Kemon/Kothay)</button>
-                <button class="preset-btn" data-text="কেমন আছো? কখন আসছো?">Bengali Script (কেমন আছো)</button>
-                <button class="preset-btn" data-text="Hola amigo, ¿dónde estás?">Spanish (Hola/Dónde)</button>
-                <button class="preset-btn" data-text="وينك يا غالي؟ متى توصل؟">Arabic (وينك/متى)</button>
-                <button class="preset-btn" data-text="Your verification OTP is 849201">OTP Code (849201)</button>
-                <button class="preset-btn" data-text="Where are you right now? 📍">Location Request (📍)</button>
-                <button class="preset-btn" data-text="bKash sent 1500 Tk from 01700000000">bKash Payment Token</button>
-            </div>
-
-            <div class="input-group">
-                <textarea id="messageInput" placeholder="Type an incoming message string here...">Kemon acho bhai? Kothay tumi?</textarea>
-            </div>
-
-            <div class="controls-row">
-                <div class="control-item">
-                    <label for="localeSelect">LOCALE OVERRIDE</label>
-                    <select id="localeSelect">
-                        <option value="auto">Auto Detect (Default)</option>
-                        <option value="en-US">English (en-US)</option>
-                        <option value="bn-BD">Bengali (bn-BD)</option>
-                        <option value="es-ES">Spanish (es-ES)</option>
-                        <option value="ar-MENA">Arabic (ar-MENA)</option>
-                        <option value="de-DE">German (de-DE)</option>
-                    </select>
-                </div>
-
-                <div class="toggle-item">
-                    <span>Driving Mode Override</span>
-                    <label class="switch">
-                        <input type="checkbox" id="drivingToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <span>Generated Action Pills (Tap to Simulate Watch Dispatch)</span>
-            </div>
-            <div id="pillsContainer" class="pills-container">
-                <!-- Smart reply pills will be dynamically inserted here -->
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <span>Inference Metrics Ledger</span>
-            </div>
-            <div class="metrics-grid">
-                <div class="metric-card">
-                    <div id="latencyMetric" class="metric-value">0.12 ms</div>
-                    <div class="metric-label">Inference Latency</div>
-                </div>
-                <div class="metric-card">
-                    <div id="localeMetric" class="metric-value">bn-BD</div>
-                    <div class="metric-label">Detected Locale</div>
-                </div>
-                <div class="metric-card">
-                    <div id="ruleMetric" class="metric-value">BanglishMatcher</div>
-                    <div class="metric-label">Pipeline Gate</div>
-                </div>
-                <div class="metric-card">
-                    <div id="countMetric" class="metric-value">3 pills</div>
-                    <div class="metric-label">Action Candidates</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <span>Architecture & Zero-Cloud Contract</span>
-            </div>
-            <p style="color: var(--text-secondary); font-size: 13px; line-height: 1.6;">
-                The WristReply AI engine operates 100% on-device. Incoming notification payload strings are parsed through low-latency heuristics and local NLP models. No data ever leaves the local process.
+          <article class="wr-card" data-aos="fade-up" data-aos-delay="80">
+            <h3 class="wr-card-title">How it works</h3>
+            <p class="text-sm leading-relaxed text-muted">
+              Eight deterministic stages, each one cheap enough to run in the notification callback:
+              gate → shield → token scan → debounce → ML Kit → multilingual fallback → context →
+              publish. ML Kit runs first; if it returns nothing (non-English, unsupported device) the
+              fallback banks take over.
             </p>
+            <ul class="wr-list mt-3">
+              <li>Google ML Kit Smart Reply, created per call and closed in <code class="wr-code">finally</code></li>
+              <li>2.5 s hard timeout so a stalled model never blocks the shade</li>
+              <li>LRU cache collapses message bursts into one prompt</li>
+            </ul>
+          </article>
+
+          <article class="wr-card" data-aos="fade-up" data-aos-delay="160">
+            <h3 class="wr-card-title">Why it is built this way</h3>
+            <p class="text-sm leading-relaxed text-muted">
+              Because a smartwatch reply has to be instant and private. A round trip to a server costs
+              300–900 ms and puts your conversation on somebody else's disk. On-device inference costs
+              milliseconds and nothing leaves the handset — the app does not even declare
+              <code class="wr-code">android.permission.INTERNET</code>.
+            </p>
+            <ul class="wr-list mt-3">
+              <li>Play Data Safety: no data collected, no data shared</li>
+              <li>Works in airplane mode, in a metro, abroad</li>
+              <li>No account, no API key, no subscription</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ PIPELINE ============================ -->
+    <section id="pipeline" class="mx-auto max-w-7xl scroll-mt-20 px-4 py-14 sm:px-6">
+      <h2 class="font-display text-2xl font-bold tracking-tight sm:text-3xl" data-aos="fade-up">The eight-stage pipeline</h2>
+      <p class="mt-2 max-w-3xl text-muted" data-aos="fade-up">
+        Every stage maps to a real class in the repository. Run a message in the playground above and the
+        strip lights up in the same order.
+      </p>
+
+      <ol class="mt-8 grid gap-3 md:grid-cols-2">
+        <li class="wr-stage" data-aos="fade-up"><b>01 · Notification gate</b><code>inspector/NotificationGate.kt</code>
+          <p>Drops ongoing events, group summaries, our own companion notifications and blank payloads before any NLP compute is allocated.</p></li>
+        <li class="wr-stage" data-aos="fade-up"><b>02 · LPTE profanity shield</b><code>filters/ProfanityGuardEngine.kt</code>
+          <p>68 default multi-lingual tokens plus your own blocklist. An abusive message never receives a cheerful auto-reply.</p></li>
+        <li class="wr-stage" data-aos="fade-up"><b>03 · Token extractor</b><code>filters/SmartTokenExtractor.kt</code>
+          <p>Pulls OTP codes and transaction IDs (Stripe, PayPal, UPI, Pix, iDEAL, bKash, bank SMS) and adds a one-tap copy action.</p></li>
+        <li class="wr-stage" data-aos="fade-up"><b>04 · Burst debounce</b><code>guard/MessageDebounceBuffer.kt</code>
+          <p>Rapid-fire messages from one sender collapse into a single 1.5 s window, so you get one prompt instead of five.</p></li>
+        <li class="wr-stage" data-aos="fade-up"><b>05 · Ephemeral ML Kit</b><code>nlp/EphemeralMLKitEngine.kt</code>
+          <p>On-device Smart Reply with a 2.5 s timeout; the client is closed in a <code class="wr-code">finally</code> block so it never lingers in RAM.</p></li>
+        <li class="wr-stage" data-aos="fade-up"><b>06 · Multilingual fallback</b><code>nlp/FallbackReplyEngine.kt</code>
+          <p>When ML Kit is empty: user pills → late-night chrono bias → script detection → keyword match → English.</p></li>
+        <li class="wr-stage" data-aos="fade-up"><b>07 · Context enhancer</b><code>context/ContextualReplyEnhancer.kt</code>
+          <p>Car Bluetooth injects a driving pill; a busy calendar slot injects “in a meeting until 3:30 PM”, localized.</p></li>
+        <li class="wr-stage" data-aos="fade-up"><b>08 · Silent publish + dispatch</b><code>publisher/NotificationPublisher.kt</code>
+          <p>An <code class="wr-code">IMPORTANCE_LOW</code> companion (no sound, no vibration, no wake) mirrors to the watch; taps route through <code class="wr-code">ActionBroadcastReceiver</code>.</p></li>
+      </ol>
+    </section>
+
+    <!-- ============================ PRIVACY ============================ -->
+    <section id="privacy" class="scroll-mt-20 border-y border-hairline bg-raised/40">
+      <div class="mx-auto grid max-w-7xl gap-8 px-4 py-14 sm:px-6 lg:grid-cols-2">
+        <div data-aos="fade-right">
+          <h2 class="font-display text-2xl font-bold tracking-tight sm:text-3xl">The zero-cloud contract</h2>
+          <p class="mt-3 text-muted">
+            The production manifest does not request <code class="wr-code">android.permission.INTERNET</code>.
+            That is not a policy promise you have to trust — it is a build-time fact the OS enforces. The
+            process is physically incapable of opening a socket.
+          </p>
+          <ul class="wr-list mt-5">
+            <li>No telemetry, no crash reporting, no remote feature flags</li>
+            <li>ML Kit models and notification bundles are disposed right after rendering</li>
+            <li><code class="wr-code">allowBackup="false"</code> + a <code class="wr-code">data_extraction_rules.xml</code> that excludes every preference file</li>
+            <li>Play Console Data Safety: <strong class="text-ink">no data collected, no data shared</strong></li>
+          </ul>
         </div>
 
-        <footer>
-            WristReply AI Engine • Standalone Vanilla JS & HTML Playground • Apache 2.0 License
-        </footer>
+        <div class="wr-card" data-aos="fade-left">
+          <h3 class="wr-card-title">Permissions, and what each one buys you</h3>
+          <div class="overflow-x-auto">
+            <table class="wr-table">
+              <thead><tr><th>Permission</th><th>Why</th></tr></thead>
+              <tbody>
+                <tr><td>Notification listener</td><td>Read message context, inject reply pills</td></tr>
+                <tr><td>Ignore battery optimizations</td><td>Survive OEM task killers</td></tr>
+                <tr><td>Post notifications</td><td>Render the silent companion (optional)</td></tr>
+                <tr><td>Wake lock</td><td>Finish a dispatch if the screen is off</td></tr>
+                <tr><td>Bluetooth connect</td><td>Detect car audio for driving mode</td></tr>
+                <tr><td>Read calendar</td><td>“In a meeting until…” pill (optional)</td></tr>
+                <tr class="wr-table-danger"><td>Internet</td><td><strong>Not declared.</strong> By design.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ LANGUAGES ============================ -->
+    <section id="languages" class="mx-auto max-w-7xl scroll-mt-20 px-4 py-14 sm:px-6">
+      <h2 class="font-display text-2xl font-bold tracking-tight sm:text-3xl" data-aos="fade-up">Language coverage</h2>
+      <p class="mt-2 max-w-3xl text-muted" data-aos="fade-up">
+        Twenty-four reply banks — casual, professional and late-night variants for each market. The
+        playground ships the exact same strings.
+      </p>
+      <div class="mt-6 overflow-x-auto" data-aos="fade-up">
+        <table class="wr-table">
+          <thead><tr><th>Market</th><th>Trigger</th><th>Casual sample</th><th>Late-night sample</th></tr></thead>
+          <tbody id="language-table"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================ WATCHES ============================ -->
+    <section id="watches" class="scroll-mt-20 border-y border-hairline bg-raised/40">
+      <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6">
+        <h2 class="font-display text-2xl font-bold tracking-tight sm:text-3xl" data-aos="fade-up">How the pills reach your watch</h2>
+        <div class="mt-6 grid gap-4 md:grid-cols-3">
+          <article class="wr-card" data-aos="fade-up">
+            <h3 class="wr-card-title">Wear OS</h3>
+            <p class="text-sm text-muted">Pixel Watch, Galaxy Watch. Notification actions mirror natively, so the pills render as inline replies; the Play Services data layer can also push a compact JSON payload to a Wear Compose companion.</p>
+            <p class="mt-3 font-mono text-[11px] text-mint">Full native · direct reply</p>
+          </article>
+          <article class="wr-card" data-aos="fade-up" data-aos-delay="80">
+            <h3 class="wr-card-title">Zepp OS (Amazfit)</h3>
+            <p class="text-sm text-muted">A JavaScript micro-app on the watch talks to the Zepp mobile bridge; the daemon relays reply tokens to the watch screen and the tap comes back over the same channel.</p>
+            <p class="mt-3 font-mono text-[11px] text-cyan">Companion bridge · mirrored actions</p>
+          </article>
+          <article class="wr-card" data-aos="fade-up" data-aos-delay="160">
+            <h3 class="wr-card-title">Budget RTOS</h3>
+            <p class="text-sm text-muted">boAt, Noise, Fire-Boltt. These watches mirror standard Android notification actions, so the injected pills show up as stock quick replies with no companion app at all.</p>
+            <p class="mt-3 font-mono text-[11px] text-amber">Action mirroring · zero extra app</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ ARCHITECTURE ============================ -->
+    <section id="architecture" class="mx-auto max-w-7xl scroll-mt-20 px-4 py-14 sm:px-6">
+      <h2 class="font-display text-2xl font-bold tracking-tight sm:text-3xl" data-aos="fade-up">Repository map</h2>
+      <div class="mt-6 grid gap-4 md:grid-cols-2" data-aos="fade-up">
+        <div class="wr-card">
+          <h3 class="wr-card-title">android/core-engine — the daemon</h3>
+          <p class="text-sm text-muted">Pure Kotlin, zero Flutter dependencies, published as an <code class="wr-code">.aar</code>. Contains the service, gate, NLP, filters, publisher, wear bridge and the JUnit suite.</p>
+          <pre class="wr-pre">core-engine/
+├── service/     NotificationProcessorService
+├── inspector/   NotificationGate, DynamicNotificationInspector
+├── nlp/         EphemeralMLKitEngine, FallbackReplyEngine,
+│                LanguageReplyBanks, LocationPillResolver
+├── filters/     ProfanityGuardEngine, SmartTokenExtractor
+├── guard/       MessageDebounceBuffer, SleepWindowGate
+├── publisher/   NotificationPublisher (IMPORTANCE_LOW)
+├── context/     Driving, Calendar, Location helpers
+└── wear/        WearSyncService</pre>
+        </div>
+        <div class="wr-card">
+          <h3 class="wr-card-title">lib/ — the Flutter cockpit</h3>
+          <p class="text-sm text-muted">OLED-dark utility UI: onboarding disclosure, permissions handshake, dashboard with a live test sandbox, app whitelist, persona, filters, automation and settings.</p>
+          <pre class="wr-pre">lib/
+├── core/        MethodChannel bridge, tokens, theme
+├── features/    onboarding · dashboard · apps · persona
+│                filters · automation · settings
+└── shared/      reply pills, metrics, state badges
+
+playground/      this page — static, zero build step
+test/            Dart unit + widget tests</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ FAQ ============================ -->
+    <section id="faq" class="scroll-mt-20 border-t border-hairline">
+      <div class="mx-auto max-w-4xl px-4 py-14 sm:px-6">
+        <h2 class="font-display text-2xl font-bold tracking-tight sm:text-3xl" data-aos="fade-up">Questions engineers ask</h2>
+        <div class="mt-6 divide-y divide-hairline border-y border-hairline" data-aos="fade-up">
+          <details class="wr-faq"><summary>Is this playground the real engine?</summary>
+            <p>The decision logic is a faithful port: the reply banks, blocklist, regexes and stage order are
+              generated from the Kotlin sources, and <code class="wr-code">playground/test/engine.test.mjs</code>
+              asserts the same expectations as the JUnit suite. What is <em>not</em> here is Google ML Kit —
+              the browser has no on-device model, so the playground always exercises the deterministic
+              fallback path.</p></details>
+          <details class="wr-faq"><summary>Does it need a rooted phone or Xposed?</summary>
+            <p>No. It uses the public <code class="wr-code">NotificationListenerService</code> API and the
+              messaging app's own <code class="wr-code">RemoteInput</code> action, exactly like the system's
+              built-in “Reply” button.</p></details>
+          <details class="wr-faq"><summary>What happens when ML Kit returns nothing?</summary>
+            <p>The fallback engine takes over: your custom pills first, then a late-night bank between 23:00
+              and 06:59, then script detection (Arabic / Devanagari / Bengali), then Latin keyword matching,
+              then English. You always get pills.</p></details>
+          <details class="wr-faq"><summary>Will OEM battery killers stop it?</summary>
+            <p>Onboarding routes you through <code class="wr-code">ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS</code>
+              and manufacturer autostart screens, and <code class="wr-code">onListenerDisconnected()</code>
+              calls <code class="wr-code">requestRebind()</code> if the ROM kills the service anyway.</p></details>
+          <details class="wr-faq"><summary>Can I ship the engine in my own app?</summary>
+            <p>Yes — <code class="wr-code">:core-engine</code> has no Flutter dependency. Add the AAR and call
+              <code class="wr-code">EngineBootstrap.initialize(this)</code> from your
+              <code class="wr-code">Application.onCreate</code>.</p></details>
+          <details class="wr-faq"><summary>How do I run this page locally?</summary>
+            <p>It is static. <code class="wr-code">cd playground &amp;&amp; python3 -m http.server 8080</code>,
+              then open <code class="wr-code">http://localhost:8080</code>. The Tailwind and AOS CDNs are used
+              for styling and scroll animation; <code class="wr-code">assets/styles.css</code> keeps the page
+              readable if a CDN is blocked.</p></details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-hairline">
+    <div class="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-8 text-sm text-faint sm:flex-row sm:items-center sm:px-6">
+      <p>WristReply AI · Apache-2.0 · <span id="cdn-status">checking CDN availability…</span></p>
+      <p class="sm:ml-auto">Engine parity: <span class="font-mono text-mint">41/41 node tests</span> · Kotlin JUnit in CI</p>
     </div>
+  </footer>
 
-    <div id="toast" class="toast">Dispatched to smartwatch!</div>
-
-    <script src="playground.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+  <script type="module" src="assets/app.js"></script>
 </body>
 </html>
