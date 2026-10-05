@@ -69,17 +69,13 @@ android {
         }
     }
 
-    // Android 14 introduced automatic app archive generation (AAB) and per-language
-    // resource compression. WristReply is a privacy-first app, so we explicitly keep
-    // the AAB split into per-ABI for the smallest install footprint.
-    splits {
-        abi {
-            isEnable = true
-            reset()
-            include("armeabi-v7a", "arm64-v8a", "x86_64")
-            isUniversalApk = true
-        }
-    }
+    // No `splits { abi { ... } }` block here, on purpose.
+    //
+    // Gradle ABI splits are an APK-only mechanism and are mutually exclusive
+    // with Android App Bundles: enabling them makes `bundleRelease` fail, so
+    // `flutter build appbundle` could never produce an .aab. The bundle is
+    // already delivered per-ABI by Play's dynamic delivery, and per-ABI APKs
+    // remain available through `flutter build apk --split-per-abi`.
 
     packaging {
         resources {

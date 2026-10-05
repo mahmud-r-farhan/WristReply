@@ -85,7 +85,21 @@ jobs:
         run: flutter build apk --release
 
       - name: Build app bundle
+        id: aab
+        continue-on-error: true
         run: flutter build appbundle
+
+      - name: Surface app bundle failure
+        if: steps.aab.outcome == 'failure'
+        run: |
+          set +e
+          flutter build appbundle > /tmp/aab.log 2>&1
+          {
+            grep -E '^e: |FAILED|What went wrong|Caused by: |Execution failed|error:' /tmp/aab.log | sort -u
+            echo '--- last 40 lines ---'
+            tail -n 40 /tmp/aab.log
+          } | base64 -w 2400 | awk '{ print "::error title=aab-b64-" NR "::" $0 }'
+          exit 1
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v7

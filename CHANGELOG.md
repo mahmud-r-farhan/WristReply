@@ -73,6 +73,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- `android/settings.gradle.kts` declared `dependencyResolutionManagement` with
+  `RepositoriesMode.PREFER_SETTINGS`, which makes Gradle ignore project-level repositories. The Flutter
+  Gradle plugin contributes the engine artifact repository at exactly that level, so no build could
+  resolve `io.flutter:arm64_v8a_debug` or `flutter_embedding_debug`. The block is gone; dependencies
+  resolve from `allprojects { repositories { … } }` as in Flutter's own template.
+- `FallbackReplyEngineTest` called `assertTrue(condition, message)` — the JUnit 5 order — while the
+  module depends on `junit:junit:4.13.2`, whose signature is `assertTrue(String message, boolean)`.
+  All five sites now use the JUnit 4 order.
+- `NotificationGateTest` stubbed `Notification.flags`, `.category` and `.extras` with Mockito. Those are
+  public **fields**, not methods, so every stubbing raised `MissingMethodInvocationException`. The
+  fixture now builds a real `Notification` and assigns the fields, keeping only the `Bundle` and the
+  `StatusBarNotification` as mocks.
+- Removed the `splits { abi { … } }` block from `android/app/build.gradle.kts`. Gradle ABI splits are
+  APK-only and mutually exclusive with App Bundles, so `flutter build appbundle` could never produce an
+  `.aab`. Per-ABI APKs remain available via `flutter build apk --split-per-abi`.
+- `android/core-engine/.../OemKeepAliveManager.kt` wrote `Intent().apply { component = component }`.
+  Inside `apply` the bare left-hand `component` resolves to the enclosing loop variable — locals shadow
+  implicit receiver members — which is a `val`, so the module did not compile. It now qualifies the
+  receiver as `this.component`, matching `isComponentAvailable` below it.
 - **Neither Android module applied the Kotlin Gradle plugin.** `:app` and `:core-engine` both configure
   the compiler through `kotlin { jvmToolchain(17); compilerOptions { … } }`, but their `plugins {}`
   blocks only applied `com.android.application` / `com.android.library`, so Gradle failed configuration
