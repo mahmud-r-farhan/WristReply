@@ -8,10 +8,13 @@ permission. Every line of NLP inference runs through on-device libraries (Google
 ML Kit Smart Reply is a 100% on-device model).
 
 - **No telemetry**, **no analytics**, **no crash uploaders** are linked into the
+
   engine.
 - All preferences are written to Android `SharedPreferences` and never leave
+
   the device sandbox.
 - The Flutter UI is only instantiated when the user opens the app — it has no
+
   background access to notifications.
 
 If you discover a violation of this guarantee (e.g. a manifest diff that adds
@@ -37,9 +40,11 @@ We aim to acknowledge within 48 hours and patch critical bugs within 7 days.
 ## Out-of-Scope / Acceptable Risks
 
 - Apps installed via sideloading that bypass the missing `INTERNET` permission
+
   (the user already has root at that point — out of our threat model).
 - Attacks originating from a malicious OEM-modified system image.
 - Any third-party smart-reply model that a downstream packager adds on top of
+
   the standalone AAR.
 
 ## Hall of Fame

@@ -48,6 +48,7 @@ The hard architectural boundary is: **the background daemon never boots the Flut
 
 ```bash
 # 1. Install Flutter (≥ 3.24)
+
 # 2. Install dependencies
 flutter pub get
 

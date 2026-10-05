@@ -101,7 +101,7 @@ jobs:
 
       - name: Grant execute permission for gradlew
         working-directory: android
-        run: chmod +x gradlew || true
+        run: chmod +x gradlew
 
       - name: Run :core-engine unit tests
         working-directory: android
@@ -125,7 +125,7 @@ jobs:
           path: android/core-engine/build/reports/tests/
 
   # ----------------------------------------------------------------------
-  # Markdown linting
+  # Markdown linting (uses repository's .markdownlint.json)
   # ----------------------------------------------------------------------
   markdown-lint:
     name: Markdown Lint
@@ -139,6 +139,7 @@ jobs:
         with:
           globs: |
             **/*.md
-            !node_modules/**
-            !build/**
-            !playground/build/**
+          ignores:
+            - 'node_modules/**'
+            - 'build/**'
+            - 'playground/build/**'

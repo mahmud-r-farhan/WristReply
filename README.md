@@ -171,7 +171,9 @@ flutter test
 ```bash
 cd android
 ./gradlew :core-engine:assembleRelease
+
 # Standalone AAR is emitted at:
+
 # android/core-engine/build/outputs/aar/core-engine-release.aar
 ```
 

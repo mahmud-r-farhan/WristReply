@@ -3,15 +3,19 @@
 ## 1. App Title (Max 30 characters)
 
 * **Primary Recommendation (29/30 chars):**  
+
   `WristReply: Smart Quick Reply`
 
 * **Alternative A - Automation Focus (30/30 chars):**  
+
   `WristReply: Auto Reply Offline`
 
 * **Alternative B - AI & Productivity (30/30 chars):**  
+
   `WristReply AI: Smart Auto Text`
 
 * **Alternative C - Wearable & Watch Focus (30/30 chars):**  
+
   `WristReply: Wear OS Quick Text`
 
 ---
@@ -19,15 +23,19 @@
 ## 2. Short Description (Max 80 characters)
 
 * **Primary Recommendation (79/80 chars):**  
+
   `One-tap smart replies for phone notifications and smartwatches. 100% offline AI.`
 
 * **Alternative A - Messaging App Keywords (78/80 chars):**  
+
   `Instant offline smart replies for WhatsApp & Telegram on your phone and watch.`
 
 * **Alternative B - Watch & Privacy Angle (80/80 chars):**  
+
   `Offline smart quick replies for WhatsApp, SMS & every watch. Zero cloud, 0% ads.`
 
 * **Alternative C - Notification Drawer Focus (77/80 chars):**  
+
   `Smart auto replies in your notification shade and on your wrist. 100% private.`
 
 ---

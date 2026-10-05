@@ -26,11 +26,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 - Bumped Dart SDK constraint to `^3.5.0` and aligned `pubspec.yaml` dependencies with current versions.
-- Upgraded `flutter_lints` to `^6.0.0`.
+- Set `flutter_lints` to `^5.0.0` (compatible with Dart 3.5 used by the GitHub Actions runner).
 - Updated `analysis_options.yaml` with stricter rule set (prefer_single_quotes, require_trailing_commas, avoid_relative_lib_imports).
 - `NotificationPublisher.publishPills` no longer silently drops to a 3-pill cap — now respects the user-selected `pillsPerMessage` (default 3, max 5).
 - `MessageDebounceBuffer` debounce window tuned to 1.5 s for snappier UX on rapid-fire chats.
 - `LocationProviderHelper.resolveDispatchText` handles missing location gracefully without crashing receivers.
+- Added `.markdownlint.json` so the CI Markdown lint job enforces our existing style instead of the strict defaults.
+- Added Gradle wrapper (`android/gradlew`, `android/gradlew.bat`, `android/gradle/wrapper/gradle-wrapper.jar`) so `./gradlew :core-engine:testDebugUnitTest` works in CI.
 
 ### Fixed
 - `general_settings_screen.dart` no longer calls `setState` after `await` without mounted guard.

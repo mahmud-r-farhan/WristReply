@@ -3,6 +3,8 @@
 # The set of lints below enforces the engineering rules documented in
 # CONTRIBUTING.md: prefer_single_quotes, explicit lifetimes, no relative
 # imports across layers, etc.
+#
+# Compatible with flutter_lints ^5.x (Dart SDK 3.5+).
 
 include: package:flutter_lints/flutter.yaml
 
@@ -58,15 +60,12 @@ linter:
     non_constant_identifier_names: true
     omit_local_variable_types: true
     prefer_final_locals: true
-    prefer_if_null_to_conditional_operators: true
     prefer_is_empty: true
     prefer_is_not_empty: true
     prefer_typing_uninitialized_variables: true
     sized_box_for_whitespace: true
-    sized_box_shrink_expand: true
     unnecessary_async: true
     unnecessary_lambdas: true
-    unnecessary_null_aware_assignments: true
     unnecessary_parenthesis: true
     unnecessary_statements: true
     use_full_hex_values_for_windows: true

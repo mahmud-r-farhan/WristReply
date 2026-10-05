@@ -16,7 +16,6 @@ The application adheres strictly to zero-cloud computing principles. The softwar
 
 To guarantee low resident memory overhead and high maintainability, the codebase enforces an absolute architectural separation between the native Android background daemon and the user-facing Flutter presentation layer.
 
-
 ```
 
 ```
